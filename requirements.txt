@@ -1,0 +1,9 @@
+# dev / contrib requirements
+Django==1.8
+linecache2==1.0.0
+PyOnfido==0.4
+requests==2.11.1
+requests-mock==1.1.0
+six==1.10.0
+traceback2==1.4.0
+unittest2==1.1.0
