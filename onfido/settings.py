@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""django_onfido settings."""
+"""onfido settings."""
 from os import getenv
 
 from django.conf import settings

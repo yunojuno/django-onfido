@@ -1,0 +1,11 @@
+{
+  "created_at": "2016-10-15T19:05:50Z",
+  "href": "/v2/checks/c26f22d5-4903-401f-8a48-7b0211d03c1f/reports/d87e1c14-d65d-490c-828c-f85f9fa8dcdf",
+  "id": "d87e1c14-d65d-490c-828c-f85f9fa8dcdf",
+  "name": "right_to_work",
+  "properties": {},
+  "result": null,
+  "status": "awaiting_data",
+  "variant": "standard",
+  "breakdown": {}
+}

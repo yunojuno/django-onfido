@@ -9,7 +9,7 @@ class OnfidoAppConfig(AppConfig):
 
     """AppConfig for Django-Onfido."""
 
-    name = 'django_onfido'
+    name = 'onfido'
     verbose_name = "Onfido"
     configs = []
 

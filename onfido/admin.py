@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-"""django_onfido admin."""
 import simplejson as json  # simplejson supports Decimal
 
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
-from django_onfido.models import Applicant, Check, Report
+from .models import Applicant, Check, Report
 
 
 def pprint(data):

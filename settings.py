@@ -17,7 +17,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sites',
     'django.contrib.staticfiles',
-    'django_onfido',
+    'onfido',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -26,7 +26,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware'
 )
 
-SECRET_KEY = "django_onfido"
+SECRET_KEY = "onfido"
 
 ROOT_URLCONF = 'urls'
 
@@ -75,7 +75,7 @@ LOGGING = {
         #     'handlers': ['console'],
         #     'propagate': False,
         # },
-        'django_onfido': {
+        'onfido': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False,

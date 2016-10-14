@@ -141,7 +141,7 @@ class JSONField(models.TextField):
         """
 
         name, path, args, kwargs = super(models.TextField, self).deconstruct()
-        path = "django_onfido.db.fields.JSONField"
+        path = "onfido.db.fields.JSONField"
         # see https://docs.djangoproject.com/en/dev/howto/
         #   custom-model-fields/#custom-field-deconstruct-method
 

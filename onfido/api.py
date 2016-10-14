@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 """
 Basic wire operations with the API - GET/POST/PUT.
 
@@ -9,7 +9,10 @@ import logging
 import requests
 import urlparse
 
-from django_onfido import settings
+from .settings import (
+    ONFIDO_API_ROOT,
+    ONFIDO_API_KEY
+)
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +30,10 @@ class ApiError(Exception):
 
 def url(path):
     """Format absolute API URL."""
-    return urlparse.urljoin(settings.ONFIDO_API_ROOT, path)
+    return urlparse.urljoin(ONFIDO_API_ROOT, path)
 
 
-def _headers(api_key=settings.ONFIDO_API_KEY):
+def _headers(api_key=ONFIDO_API_KEY):
     """Format request headers."""
     return {
         "Authorization": "Token token={0}".format(api_key),
@@ -48,10 +51,11 @@ def _respond(response):
 
 def get(url):
     """Make a GET request and return the response as JSON."""
-    logger.debug("Making request to %s", url)
+    logger.debug("Making GET request to %s", url)
     return _respond(requests.get(url, headers=_headers()))
 
 
 def post(url, data):
     """Make a POST request and return the response as JSON."""
+    logger.debug("Making POST request to %s", url)
     return _respond(requests.post(url, headers=_headers(), json=data))
