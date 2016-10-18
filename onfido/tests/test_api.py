@@ -4,8 +4,8 @@ import mock
 from django.test import TestCase
 
 from ..api import (
-    get as api_get,
-    post as api_post,
+    _get,
+    _post,
     _headers,
     _respond,
     ApiError
@@ -52,7 +52,7 @@ class ApiTests(TestCase):
         response.status_code = 200
         headers = mock_headers.return_value
         mock_get.return_value = response
-        self.assertEqual(api_get('/'), response.json.return_value)
+        self.assertEqual(_get('/'), response.json.return_value)
         mock_get.assert_called_once_with('/', headers=headers)
 
     @mock.patch('requests.post')
@@ -64,5 +64,5 @@ class ApiTests(TestCase):
         headers = mock_headers.return_value
         data = {"foo": "bar"}
         mock_post.return_value = response
-        self.assertEqual(api_post('/', data), response.json.return_value)
+        self.assertEqual(_post('/', data), response.json.return_value)
         mock_post.assert_called_once_with('/', headers=headers, json=data)

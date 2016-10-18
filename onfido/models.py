@@ -6,7 +6,6 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext as _
 
-from .api import get, post, url as format_url
 from .db.fields import JSONField
 from .signals import on_status_change, on_completion
 
@@ -37,28 +36,15 @@ class BaseModel(models.Model):
         super(BaseModel, self).save(*args, **kwargs)
         return self
 
-    @property
-    def api_get_path(self):
-        """Return relative API path that points to the GET endpoint."""
-        raise NotImplementedError()
-
-    def parse_raw(self):
+    def parse(self, raw_json):
         """Parses the raw value out into other properties."""
+        self.raw = raw_json
         self.id = self.raw['id']
         self.created_at = datetime.datetime.strptime(
             self.raw['created_at'],
             '%Y-%m-%dT%H:%M:%SZ'
         )
         return self
-
-    def fetch(self):
-        """Fetch latest version from Api and update local data."""
-        self.raw = get(format_url(self.api_get_path))
-        return self
-
-    def pull(self):
-        """Fetch and parse the remote data."""
-        return self.fetch().parse_raw().save()
 
 
 class BaseStatusModel(BaseModel):
@@ -121,9 +107,9 @@ class BaseStatusModel(BaseModel):
             on_completion.send(self.__class__, instance=self)
         return self
 
-    def parse_raw(self):
+    def parse(self, raw_json):
         """Parses the raw value out into other properties."""
-        super(BaseStatusModel, self).parse_raw()
+        super(BaseStatusModel, self).parse(raw_json)
         self.result = self.raw['result']
         self.status = self.raw['status']
         return self
@@ -133,24 +119,15 @@ class ApplicantManager(models.Manager):
 
     """Custom Applicant queryset."""
 
-    def create_applicant(self, user):
+    def create_applicant(self, user, raw):
         """Create a new applicant in Onfido from a user."""
-        data = {
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "email": user.email
-        }
-        response = post(format_url(Applicant.POST), data)
-        logger.debug(response)
-        return Applicant(user=user, raw=response).parse_raw().save()
+        logger.debug("Creating new Onfido applicant from JSON: %s", raw)
+        return Applicant(user=user).parse(raw).save()
 
 
 class Applicant(BaseModel):
 
     """An Onfido applicant record."""
-
-    GET = 'applicants/{}'
-    POST = 'applicants'
 
     user = models.ForeignKey(
         User,
@@ -167,51 +144,20 @@ class Applicant(BaseModel):
             self.id, self.user.username
         )
 
-    @property
-    def api_get_path(self):
-        return Applicant.GET.format(self.id)
 
+class CheckManager(models.Manager):
 
-def create_check(
-    applicant, check_type, reports,
-    suppress_form_emails=True,
-    redirect_uri=None
-):
-    """
-    Create a new Check (and child Reports).
+    """Check model manager."""
 
-    Args:
-        applicant: Applicant for whom the checks are being made.
-        check_type: string, currently only 'standard' is supported.
-        reports: list of strings, each of which is a valid report type.
-
-    Kwargs:
-        suppress_form_emails: bool, if True then suppress the email the Onfido
-            itself would normally send when a check is initiated. Defaults to
-            True.
-        redirect_uri: string, a url to which to direct the user _after_ they
-            have submitted all the information requested.
-
-    Returns a new Check object, and creates the child Report objects.
-
-    """
-    data = {
-        "type": check_type,
-        "suppress_form_emails": suppress_form_emails,
-        "reports": [{'name': r for r in reports}],
-        "redirect_uri": redirect_uri
-    }
-    response = post(format_url(Applicant.POST), data)
-    logger.debug(response)
-    return Check(applicant=applicant, raw=response).parse_raw().save()
+    def create_check(self, applicant, raw):
+        """Create a new Check object from the raw JSON."""
+        logger.debug("Creating new Onfido check from JSON: %s", raw)
+        return Check(user=applicant.user, applicant=applicant).parse(raw).save()
 
 
 class Check(BaseStatusModel):
 
     """The state of an individual check made against an Applicant."""
-
-    GET = 'applicants/{}/checks/{}'
-    POST = 'applicants/{}/checks'
 
     CHECK_TYPE_CHOICES = (
         ('express', 'Express check'),
@@ -232,6 +178,7 @@ class Check(BaseStatusModel):
         ('clear', 'Clear'),
         ('consider', 'Consider')
     )
+
     user = models.ForeignKey(
         User,
         help_text=_("The Django user (denormalised from Applicant to make navigation easier)."),  # noqa
@@ -247,6 +194,8 @@ class Check(BaseStatusModel):
         choices=CHECK_TYPE_CHOICES,
         help_text=_("See https://documentation.onfido.com/#check-types")
     )
+
+    objects = CheckManager()
 
     def __unicode__(self):
         return (
@@ -265,15 +214,21 @@ class Check(BaseStatusModel):
             )
         )
 
-    @property
-    def api_get_path(self):
-        return Check.GET.format(self.applicant.id, self.id)
-
-    def parse_raw(self):
+    def parse(self, raw_json):
         """Parses the raw value out into other properties."""
-        super(Check, self).parse_raw()
+        super(Check, self).parse(raw_json)
         self.check_type = self.raw['type']
         return self
+
+
+class ReportManager(models.Manager):
+
+    """Report model manager."""
+
+    def create_report(self, check, raw):
+        """Create a new Report from the raw JSON."""
+        logger.debug("Creating new Onfido report from JSON: %s", raw)
+        return Report(user=check.user, onfido_check=check).parse(raw).save()
 
 
 class Report(BaseStatusModel):
@@ -304,6 +259,7 @@ class Report(BaseStatusModel):
         ('consider', 'Consider'),
         ('unidentified', 'Unidentified'),
     )
+
     user = models.ForeignKey(
         User,
         help_text=_("The Django user (denormalised from Applicant to make navigation easier)."),  # noqa
@@ -319,6 +275,8 @@ class Report(BaseStatusModel):
         choices=REPORT_TYPE_CHOICES,
         help_text=_("The name of the report - see https://documentation.onfido.com/#reports")
     )
+
+    objects = ReportManager()
 
     def __unicode__(self):
         return (
@@ -337,12 +295,8 @@ class Report(BaseStatusModel):
             )
         )
 
-    @property
-    def api_get_path(self):
-        return 'checks/{}/reports/{}'.format(self.onfido_check.id, self.id)
-
-    def parse_raw(self):
+    def parse(self, raw_json):
         """Parses the raw value out into other properties."""
-        super(Report, self).parse_raw()
+        super(Report, self).parse(raw_json)
         self.report_type = self.raw['name']
         return self
