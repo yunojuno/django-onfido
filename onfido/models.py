@@ -3,8 +3,6 @@ import datetime
 import logging
 
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import ugettext as _
 
@@ -61,6 +59,7 @@ class BaseModel(models.Model):
     def pull(self):
         """Fetch and parse the remote data."""
         return self.fetch().parse_raw().save()
+
 
 class BaseStatusModel(BaseModel):
 
@@ -125,8 +124,8 @@ class BaseStatusModel(BaseModel):
     def parse_raw(self):
         """Parses the raw value out into other properties."""
         super(BaseStatusModel, self).parse_raw()
-        self.result=self.raw['result']
-        self.status=self.raw['status']
+        self.result = self.raw['result']
+        self.status = self.raw['status']
         return self
 
 
@@ -273,7 +272,7 @@ class Check(BaseStatusModel):
     def parse_raw(self):
         """Parses the raw value out into other properties."""
         super(Check, self).parse_raw()
-        self.check_type=self.raw['type']
+        self.check_type = self.raw['type']
         return self
 
 
@@ -345,5 +344,5 @@ class Report(BaseStatusModel):
     def parse_raw(self):
         """Parses the raw value out into other properties."""
         super(Report, self).parse_raw()
-        self.report_type=self.raw['name']
+        self.report_type = self.raw['name']
         return self

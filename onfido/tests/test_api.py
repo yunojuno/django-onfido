@@ -8,13 +8,13 @@ from ..api import (
     post as api_post,
     _headers,
     _respond,
-    url,
-    ONFIDO_API_ROOT,
-    ONFIDO_API_KEY,
     ApiError
 )
 
+
 class ApiTests(TestCase):
+
+    """Api module tests (not testing the API itself)."""
 
     def test__headers(self):
         """Test the _headers function return valid dict."""

@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
 import datetime
-import json
 import mock
-import os
-import random
 
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Site
-from django.core.urlresolvers import reverse
 from django.db.models import Model
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase
 
 from ..models import (
     BaseModel,
@@ -19,6 +14,7 @@ from ..models import (
     Report,
     format_url
 )
+
 
 class TestBaseModel(BaseModel):
 
@@ -61,11 +57,11 @@ class BaseModelTests(TestCase):
     def test_parse_raw(self):
         """Test the parse_raw method."""
         data = {
-          "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
-          "created_at": "2016-10-15T19:05:50Z",
-          "status": "awaiting_applicant",
-          "type": "standard",
-          "result": "clear",
+            "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
+            "created_at": "2016-10-15T19:05:50Z",
+            "status": "awaiting_applicant",
+            "type": "standard",
+            "result": "clear",
         }
         obj = TestBaseModel(raw=data).parse_raw()
         self.assertEqual(obj.id, data['id'])
@@ -117,11 +113,11 @@ class BaseStatusModelTests(TestCase):
     def test_parse_raw(self):
         """Test the parse_raw method."""
         data = {
-          "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
-          "created_at": "2016-10-15T19:05:50Z",
-          "status": "awaiting_applicant",
-          "type": "standard",
-          "result": "clear",
+            "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
+            "created_at": "2016-10-15T19:05:50Z",
+            "status": "awaiting_applicant",
+            "type": "standard",
+            "result": "clear",
         }
         obj = TestBaseStatusModel(raw=data).parse_raw()
         self.assertEqual(obj.id, data['id'])
@@ -203,6 +199,7 @@ class ApplicantManagerTests(TestCase):
             datetime.datetime(2016, 10, 15, 19, 5, 7)
         )
 
+
 class ApplicantTests(TestCase):
 
     """Applicant models tests."""
@@ -264,11 +261,11 @@ class CheckTests(TestCase):
     def test_parse_raw(self):
         """Test the parse_raw method."""
         data = {
-          "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
-          "created_at": "2016-10-15T19:05:50Z",
-          "status": "awaiting_applicant",
-          "type": "standard",
-          "result": "clear",
+            "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
+            "created_at": "2016-10-15T19:05:50Z",
+            "status": "awaiting_applicant",
+            "type": "standard",
+            "result": "clear",
         }
         check = Check(raw=data)
         check.parse_raw()
@@ -317,14 +314,12 @@ class ReportTests(TestCase):
 
     def test_parse_raw(self):
         """Test the parse_raw method."""
-        # with open(os.path.join(os.path.dirname(__file__), 'test_files/check.json')) as f:
-        #     data = json.load(f)
         data = {
-          "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
-          "created_at": "2016-10-15T19:05:50Z",
-          "status": "awaiting_applicant",
-          "result": "clear",
-          "name": "identity",
+            "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
+            "created_at": "2016-10-15T19:05:50Z",
+            "status": "awaiting_applicant",
+            "result": "clear",
+            "name": "identity",
         }
         report = Report(raw=data)
         report.parse_raw()

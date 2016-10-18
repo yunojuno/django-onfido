@@ -2,7 +2,7 @@
 import json
 import mock
 
-from django.test import TestCase, Client, RequestFactory
+from django.test import TestCase, RequestFactory
 
 from ..models import Check, Report
 from ..views import (
@@ -10,6 +10,7 @@ from ..views import (
     _update_status,
     _get_manager
 )
+
 
 class ViewTests(TestCase):
 
@@ -27,12 +28,8 @@ class ViewTests(TestCase):
         with mock.patch.object(Check, 'objects') as mock_manager:
             obj = mock.Mock()
             mock_manager.get.return_value = obj
-            response = _update_status(
-                "check", 'obj_id', 'action', 'status', 'completed_at'
-            )
-            obj.update_status.assert_called_once_with(
-                'status', 'completed_at'
-            )
+            _update_status("check", 'obj_id', 'action', 'status', 'completed_at')
+            obj.update_status.assert_called_once_with('status', 'completed_at')
 
     def test_status_update(self):
         """Test the status_update view function."""
@@ -44,7 +41,7 @@ class ViewTests(TestCase):
                     "id": "5345badd-f4bf-4240-9f3b-ffb998bda09e",
                     "status": "in_progress",
                     "completed_at": "2016-10-15 11:34:09 UTC",
-                    "href": "https://api.onfido.com/v1/applicants/4d390bbd-63c7-4960-8304-a7a04a8051e8/checks/5345badd-f4bf-4240-9f3b-ffb998bda09e"
+                    "href": "https://api.onfido.com/v1/applicants/4d390bbd-63c7-4960-8304-a7a04a8051e8/checks/5345badd-f4bf-4240-9f3b-ffb998bda09e"  # noqa
                 }
             }
         }
@@ -76,11 +73,10 @@ class ViewTests(TestCase):
             assert_update(data, 'Report not found.')
 
         # unknown exception
-        with mock.patch('onfido.views._status_update') as mock_update:
+        with mock.patch('onfido.views._update_status') as mock_update:
             mock_update.side_effect = Exception("foobar")
             assert_update(data, 'Unknown error.')
 
         # valid payload / object
-        with mock.patch('onfido.views._status_update') as mock_manager:
-            request = factory.post('/', data=json.dumps(data), content_type='application/json')
+        with mock.patch('onfido.views._update_status') as mock_manager:
             assert_update(data, 'Update processed.')

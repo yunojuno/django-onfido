@@ -10,7 +10,6 @@ See https://documentation.onfido.com/?shell#webhooks
 import json
 import logging
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 
 from .models import Check, Report
@@ -34,25 +33,26 @@ def status_update(request):
     logger.debug("Received Onfido callback: {}".format(request.body))
     data = json.loads(request.body)
     try:
-        _update_status(
-            data['payload']['resource_type'],
-            data['payload']['object']['id'],
-            data['payload']['action'],
-            data['payload']['object']['status'],
-            data['payload']['object']['completed_at']
-        )
+        payload = data['payload']
+        resource_type = payload['resource_type']
+        action = payload['action']
+        obj = payload['object']
+        obj_id = obj['id']
+        obj_status = obj['status']
+        obj_completed = obj['completed_at']
+        _update_status(resource_type, obj_id, action, obj_status, obj_completed)
         return HttpResponse("Update processed.")
     except KeyError:
-        logger.warn("Missing Onfido event content: {}".format(data))
+        logger.warn("Missing Onfido event content: %s", data)
         return HttpResponse("Unexpected event content.")
-    except AssertionError as ex:
-        logger.warn("Unknown Onfido resource type")
+    except AssertionError:
+        logger.warn("Unknown Onfido resource type: %s", resource_type)
         return HttpResponse("Unknown resource type.")
     except Check.DoesNotExist:
-        logger.warn("Onfido check does not exist")
+        logger.warn("Onfido check does not exist: %s", obj_id)
         return HttpResponse("Check not found.")
     except Report.DoesNotExist:
-        logger.warn("Onfido report does not exist")
+        logger.warn("Onfido report does not exist: %s", obj_id)
         return HttpResponse("Report not found.")
     except Exception:
         logger.exception("Onfido update could not be processed.")
