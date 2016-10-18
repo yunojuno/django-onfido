@@ -2,7 +2,7 @@
 from os import path, chdir, pardir
 from setuptools import setup, find_packages
 
-# README = open(path.join(path.dirname(__file__), 'README.rst')).read()
+README = open(path.join(path.dirname(__file__), 'README.rst')).read()
 
 # allow setup.py to be run from any path
 chdir(path.normpath(path.join(path.abspath(__file__), pardir)))
@@ -17,8 +17,8 @@ setup(
     ],
     include_package_data=True,
     description='Django app for integration with Onfido.',
-    # long_description=README,
-    url='https://github.com/yunojuno/django-onfido',
+    long_description=README,
+    url='https://github.com/hugorodgerbrown/django-onfido',
     author='Hugo Rodger-Brown',
     author_email='code@yunojuno.com',
     maintainer='Hugo Rodger-Brown',
