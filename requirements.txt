@@ -30,3 +30,4 @@ traitlets==4.3.1
 unittest2==1.1.0
 virtualenv==15.0.3
 wcwidth==0.1.7
+wheel==0.24.0
