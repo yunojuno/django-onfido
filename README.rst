@@ -7,14 +7,14 @@ Django-Onfido
 Django app for integration with the Onfido API (v2)
 
 Background
-----
+----------
 
 Onfido is an online identity verification service. It provides API access to a range of tests (identity, right to work, criminal history, credit report). It is assumed that you are only interested in this project because you are already aware of what Onfido does, and so I won't repeat it here. If you want to find out more, head over to their website.
 
-If you _are_ using Onfido, and you are using Django, then this project can be used to manage Onfido checks against your existing Django users. It handles the API interactions, as well as providing the callback webhooks required to support live status updates.
+If you *are* using Onfido, and you are using Django, then this project can be used to manage Onfido checks against your existing Django users. It handles the API interactions, as well as providing the callback webhooks required to support live status updates.
 
 Installation
-----
+------------
 
 The project is available through PyPI as ``django-onfido``:
 
@@ -29,7 +29,7 @@ And the main package itself is just ``onfido``:
     >>> from onfido import api, models, views, urls, admin, signals
 
 Usage
-----
+-----
 
 The main use case is as follows:
 
@@ -66,7 +66,7 @@ This will create the **Check** and **Report** objects on Onfido, and store them 
     DEBUG Processing 'check.completed' action on check.bd8232c4-...
 
 Tests
-----
+-----
 
 The project has pretty good test coverage (>90%) and the tests themselves run through ``tox``.
 
@@ -86,11 +86,11 @@ If you want to run the tests manually, make sure you install the requirements, a
 If you are hacking on the project, please keep coverage up.
 
 Contributing
-----
+------------
 
 Standard GH rules apply: clone the repo to your own account, create a branch, make sure you update the tests, and submit a pull request.
 
 Status
-----
+------
 
 This project is very early in its development. We are using it at YunoJuno, but 'caveat emptor'. It currently only supports 'standard' checks, and has very patchy support for the full API. It does what we need it to do right now, and we will extend it as we evolve. If you need or want additional features, get involved :-).
