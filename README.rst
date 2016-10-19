@@ -45,7 +45,7 @@ The main use case is as follows:
     DEBUG <Response [201]>
     DEBUG {u'first_name': u'hugo', u'last_name': u'rb', u'middle_name': None, ...}
     DEBUG Creating new Onfido applicant from JSON: {u'first_name': u'hugo', u'last_name': u'rb', ...}
-    <Applicant id=a2c98eae-bbd5-4a82-a259-e996d2ceecd0 user='hugo'>
+    <Applicant id=a2c98eae-XXX user='hugo'>
     
 2. Create your check + reports for the applicant:
 
