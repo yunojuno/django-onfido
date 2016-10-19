@@ -10,6 +10,8 @@ See https://documentation.onfido.com/?shell#webhooks
 import json
 import logging
 
+from dateutil.parser import parse as date_parse
+
 from django.http import HttpResponse
 
 from .models import Check, Report
@@ -39,11 +41,11 @@ def status_update(request):
         obj = payload['object']
         obj_id = obj['id']
         obj_status = obj['status']
-        obj_completed = obj['completed_at']
+        obj_completed = date_parse(obj['completed_at'])
         _update_status(resource_type, obj_id, action, obj_status, obj_completed)
         return HttpResponse("Update processed.")
-    except KeyError:
-        logger.warn("Missing Onfido event content: %s", data)
+    except KeyError as ex:
+        logger.warn("Missing Onfido event content: %s", ex)
         return HttpResponse("Unexpected event content.")
     except AssertionError:
         logger.warn("Unknown Onfido resource type: %s", resource_type)
@@ -73,4 +75,4 @@ def _update_status(resource_type, obj_id, action, status, completed_at):
     logger.debug("Processing '%s' action on %s.%s", action, resource_type, obj_id)
     manager = _get_manager(resource_type)
     obj = manager.get(id=obj_id)
-    obj.update_status(status, completed_at)
+    obj.update_status(action, status, completed_at)

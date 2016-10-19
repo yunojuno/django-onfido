@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+import datetime
 import json
 import mock
+
+import dateutil
 
 from django.test import TestCase, RequestFactory
 
@@ -29,7 +32,7 @@ class ViewTests(TestCase):
             obj = mock.Mock()
             mock_manager.get.return_value = obj
             _update_status("check", 'obj_id', 'action', 'status', 'completed_at')
-            obj.update_status.assert_called_once_with('status', 'completed_at')
+            obj.update_status.assert_called_once_with('action', 'status', 'completed_at')
 
     def test_status_update(self):
         """Test the status_update view function."""
@@ -80,3 +83,47 @@ class ViewTests(TestCase):
         # valid payload / object
         with mock.patch('onfido.views._update_status') as mock_manager:
             assert_update(data, 'Update processed.')
+
+    @mock.patch('onfido.views._update_status')
+    def test_date_format_bug(self, mock_update):
+        """
+        Test that we can cope with different date formats.
+
+        The Onfido API uses different date formats - hence the use of
+        python-dateutil to parse the strings they send us. This test
+        just confirms that it's working properly.
+
+        """
+        factory = RequestFactory()
+
+        def assert_dates(data):
+            mock_update.reset_mock()
+            request = factory.post('/', data=json.dumps(data), content_type='application/json')
+            status_update(request)
+            mock_update.assert_called_once_with(
+                data['payload']['resource_type'],
+                data['payload']['object']['id'],
+                data['payload']['action'],
+                data['payload']['object']['status'],
+                # hard-code this one as we want to know we get exactly the same datetime
+                datetime.datetime(2016, 10, 15, 11, 34, 9, tzinfo=dateutil.tz.tzlocal())
+            )
+
+        data = {
+            "payload": {
+                "resource_type": "check",
+                "action": "check.form_completed",
+                "object": {
+                    "id": "5345badd-f4bf-4240-9f3b-ffb998bda09e",
+                    "status": "in_progress",
+                    "completed_at": "2016-10-15 11:34:09 UTC",
+                    "href": "https://api.onfido.com/v1/applicants/4d390bbd-63c7-4960-8304-a7a04a8051e8/checks/5345badd-f4bf-4240-9f3b-ffb998bda09e"  # noqa
+                }
+            }
+        }
+
+        assert_dates(data)
+
+        # different format, same assert
+        data['payload']['object']['completed_at'] = "2016-10-15T11:34:09Z"
+        assert_dates(data)

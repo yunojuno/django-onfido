@@ -6,8 +6,9 @@ This is a simple wrapper around requests.
 
 """
 import logging
-import requests
 import urlparse
+
+import requests
 
 from .models import (
     Applicant,
@@ -29,6 +30,7 @@ class ApiError(Exception):
     def __init__(self, response):
         """Initialise error from response object."""
         data = response.json()
+        logger.debug("Onfido API error: {}".format(data))
         super(ApiError, self).__init__(data['error']['message'])
         self.error_type = data['error']['type']
 
@@ -75,7 +77,7 @@ def create_applicant(user):
     }
     response = _post(_url('applicants'), data)
     logger.debug(response)
-    return Applicant(user=user).parse(response).save()
+    return Applicant.objects.create_applicant(user, response)
 
 
 def create_check(
@@ -110,5 +112,5 @@ def create_check(
     logger.debug(response)
     check = Check.objects.create_check(applicant=applicant, raw=response)
     for report in response['reports']:
-        Report.objects.create_report(onfido_check=check, raw=report)
+        Report.objects.create_report(check=check, raw=report)
     return check

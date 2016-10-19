@@ -5,28 +5,38 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
-from .models import Applicant, Check, Report
+from .models import (
+    Applicant,
+    Check,
+    Report
+)
 
 
-def pprint(data):
-    """
-    Return an indented HTML pretty-print version of JSON.
+class RawMixin(object):
 
-    Take the event_payload JSON, indent it, order the keys and then
-    present it as a <code> block. That's about as good as we can get
-    until someone builds a custom syntax function.
+    """Admin mixin used to pprint raw JSON fields."""
 
-    """
-    pretty = json.dumps(
-        data,
-        sort_keys=True,
-        indent=4,
-        separators=(',', ': ')
-    )
-    return mark_safe("<code>%s</code>" % pretty.replace(" ", "&nbsp;"))
+    def _raw(self, obj):
+        """
+        Return an indented HTML pretty-print version of JSON.
+
+        Take the event_payload JSON, indent it, order the keys and then
+        present it as a <code> block. That's about as good as we can get
+        until someone builds a custom syntax function.
+
+        """
+        pretty = json.dumps(
+            obj.raw,
+            sort_keys=True,
+            indent=4,
+            separators=(',', ': ')
+        )
+        html = pretty.replace(" ", "&nbsp;").replace("\n", "<br>")
+        return mark_safe("<code>{}</code>".format(html))
+    _raw.short_description = _("Raw (from API)")
 
 
-class ApplicantAdmin(admin.ModelAdmin):
+class ApplicantAdmin(RawMixin, admin.ModelAdmin):
 
     """Admin model for Applicant objects."""
 
@@ -37,33 +47,42 @@ class ApplicantAdmin(admin.ModelAdmin):
     raw_id_fields = ('user',)
     exclude = ('raw',)
 
-    def _raw(self, obj):
-        """Return pprint version of the raw field."""
-        return pprint(obj.raw)
-    _raw.short_description = _("Raw")
-
 admin.site.register(Applicant, ApplicantAdmin)
 
 
-class CheckAdmin(admin.ModelAdmin):
+class CheckAdmin(RawMixin, admin.ModelAdmin):
 
     """Admin model for Check objects."""
 
-    list_display = ('id', 'applicant', 'check_type', 'created_at')
+    list_display = (
+        'id', 'applicant', 'check_type', 'status',
+        'result', 'created_at', 'updated_at'
+    )
+    readonly_fields = (
+        'id', 'created_at', 'applicant', 'check_type',
+        'status', 'result', 'updated_at', '_raw'
+    )
     list_filter = ('check_type', 'created_at',)
-    readonly_fields = ('created_at', 'id')
-    raw_id_fields = ('applicant',)
+    raw_id_fields = ('applicant', 'user')
+    exclude = ('raw',)
 
 admin.site.register(Check, CheckAdmin)
 
 
-class ReportAdmin(admin.ModelAdmin):
+class ReportAdmin(RawMixin, admin.ModelAdmin):
 
     """Admin model for Report objects."""
 
-    list_display = ('onfido_check', 'report_type', 'created_at')
+    list_display = (
+        'onfido_check', 'report_type', 'status',
+        'result', 'created_at', 'updated_at'
+    )
+    readonly_fields = (
+        'id', 'user', 'onfido_check', 'report_type',
+        'status', 'result', 'created_at', 'updated_at', '_raw'
+    )
     list_filter = ('created_at', 'report_type')
-    readonly_fields = ('created_at', 'id')
-    raw_id_fields = ('onfido_check',)
+    raw_id_fields = ('onfido_check', 'user')
+    exclude = ('raw',)
 
 admin.site.register(Report, ReportAdmin)

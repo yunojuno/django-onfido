@@ -54,17 +54,17 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
-        'null': {
-            'level': 'DEBUG',
-            'class': 'django.utils.log.NullHandler',
-        },
+        # 'null': {
+        #     'level': 'DEBUG',
+        #     'class': 'django.utils.log.NullHandler',
+        # },
     },
     'loggers': {
-        '': {
-            'handlers': ['null'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
+        # '': {
+        #     'handlers': ['null'],
+        #     'propagate': True,
+        #     'level': 'DEBUG',
+        # },
         # 'django': {
         #     'handlers': ['console'],
         #     'level': getenv('LOGGING_LEVEL_DJANGO', 'WARNING'),

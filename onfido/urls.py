@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """onfido urls."""
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
-urlpatterns = patterns(
-    'onfido.views',
-    url(r'^webhook/$', 'status_update', name="status_update"),
-)
+from onfido.views import status_update
+
+urlpatterns = [
+    url(r'^webhook/$', status_update, name='status_update'),
+]

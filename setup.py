@@ -9,11 +9,12 @@ chdir(path.normpath(path.join(path.abspath(__file__), pardir)))
 
 setup(
     name="django-onfido",
-    version="0.1.0",
+    version="0.1.0-dev0",
     packages=find_packages(),
     install_requires=[
         'django>=1.8',
-        'pyonfido',
+        'requests>=2',
+        'python-dateutil'
     ],
     include_package_data=True,
     description='Django app for integration with Onfido.',
