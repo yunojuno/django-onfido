@@ -50,7 +50,6 @@ def _headers(api_key=ONFIDO_API_KEY):
 
 def _respond(response):
     """Process common response object."""
-    logger.debug(response)
     if not str(response.status_code).startswith('2'):
         raise ApiError(response)
     return response.json()
@@ -64,7 +63,7 @@ def _get(url):
 
 def _post(url, data):
     """Make a POST request and return the response as JSON."""
-    logger.debug("Making POST request to %s", url)
+    logger.debug("Making POST request to %s: %s", url, data)
     return _respond(requests.post(url, headers=_headers(), json=data))
 
 
@@ -80,10 +79,7 @@ def create_applicant(user):
     return Applicant.objects.create_applicant(user, response)
 
 
-def create_check(
-    applicant, check_type, reports,
-    suppress_form_emails=True, redirect_uri=None
-):
+def create_check(applicant, check_type, reports, **kwargs):
     """
     Create a new Check (and child Reports).
 
@@ -93,21 +89,28 @@ def create_check(
         reports: list of strings, each of which is a valid report type.
 
     Kwargs:
-        suppress_form_emails: bool, if True then suppress the email the Onfido
-            itself would normally send when a check is initiated. Defaults to
-            True.
-        redirect_uri: string, a url to which to direct the user _after_ they
-            have submitted all the information requested.
+        any kwargs passed in are merged into the data dict sent to the API. This
+        enables support for additional check properties - e.g. redirect_uri,
+        tags, suppress_form_emails and any other that may change over time. See
+        https://documentation.onfido.com/#checks for details.
 
     Returns a new Check object, and creates the child Report objects.
 
     """
+    assert check_type == 'standard', (
+        "Invalid check_type '{}', currently only 'standard' "
+        "checks are supported.".format(check_type)
+    )
+    assert isinstance(reports, (list, tuple)), (
+        "Invalid reports arg '{}', must be a list or tuple "
+        "if supplied.".format(reports)
+    )
     data = {
         "type": check_type,
-        "suppress_form_emails": suppress_form_emails,
         "reports": [{'name': r for r in reports}],
-        "redirect_uri": redirect_uri
     }
+    # merge in the additional kwargs
+    data.update(kwargs)
     response = _post(_url('applicants/{}/checks'.format(applicant.id)), data)
     logger.debug(response)
     check = Check.objects.create_check(applicant=applicant, raw=response)

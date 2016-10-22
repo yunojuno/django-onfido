@@ -150,6 +150,10 @@ class ApiTests(TestCase):
 
         # 1. use the defaults.
         check = create_check(applicant, 'standard', ('identity', 'document'))
+        mock_post.assert_called_once_with(
+            'https://api.onfido.com/v2/applicants/a9acefdf-3dc5-4973-aa78-20bd36825b50/checks',
+            {'reports': [{'name': 'document'}], 'type': 'standard'}
+        )
         self.assertEqual(Check.objects.get(), check)
         # check we have two reports, and that the raw field matches the JSON
         # and that the parse method has run
@@ -158,3 +162,17 @@ class ApiTests(TestCase):
             # this will only work if the JSON has been parsed correctly
             report = Report.objects.get(id=r['id'])
             self.assertEqual(report.raw, r)
+
+        # confirm that asserts guard input
+        self.assertRaises(AssertionError, create_check, applicant, 'express', ('identity'))
+        self.assertRaises(AssertionError, create_check, applicant, 'standard', 'identity')
+        self.assertRaises(AssertionError, create_check, applicant, 'standard', None)
+
+        # confirm that kwargs are merged in correctly
+        check.delete()
+        mock_post.reset_mock()
+        check = create_check(applicant, 'standard', ('identity',), foo='bar')
+        mock_post.assert_called_once_with(
+            'https://api.onfido.com/v2/applicants/a9acefdf-3dc5-4973-aa78-20bd36825b50/checks',
+            {'reports': [{'name': 'identity'}], 'type': 'standard', 'foo': 'bar'}
+        )
