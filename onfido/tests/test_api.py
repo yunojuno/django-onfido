@@ -152,7 +152,7 @@ class ApiTests(TestCase):
         check = create_check(applicant, 'standard', ('identity', 'document'))
         mock_post.assert_called_once_with(
             'https://api.onfido.com/v2/applicants/a9acefdf-3dc5-4973-aa78-20bd36825b50/checks',
-            {'reports': [{'name': 'document'}], 'type': 'standard'}
+            {'reports': [{'name': 'identity'}, {'name': 'document'}], 'type': 'standard'}
         )
         self.assertEqual(Check.objects.get(), check)
         # check we have two reports, and that the raw field matches the JSON

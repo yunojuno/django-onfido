@@ -107,7 +107,7 @@ def create_check(applicant, check_type, reports, **kwargs):
     )
     data = {
         "type": check_type,
-        "reports": [{'name': r for r in reports}],
+        "reports": [{'name': r} for r in reports],
     }
     # merge in the additional kwargs
     data.update(kwargs)
