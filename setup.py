@@ -9,7 +9,7 @@ chdir(path.normpath(path.join(path.abspath(__file__), pardir)))
 
 setup(
     name="django-onfido",
-    version="0.2.2",
+    version="0.2.3",
     packages=find_packages(),
     install_requires=[
         'django>=1.8',
