@@ -8,7 +8,8 @@ from django.utils.translation import ugettext as _
 from .models import (
     Applicant,
     Check,
-    Report
+    Report,
+    Event
 )
 
 
@@ -40,10 +41,10 @@ class ApplicantAdmin(RawMixin, admin.ModelAdmin):
 
     """Admin model for Applicant objects."""
 
-    list_display = ('id', 'user', 'created_at')
+    list_display = ('user', 'created_at')
     list_filter = ('created_at',)
     ordering = ('user__first_name', 'user__last_name')
-    readonly_fields = ('id', 'created_at', '_raw')
+    readonly_fields = ('onfido_id', 'user', 'created_at', '_raw')
     raw_id_fields = ('user',)
     exclude = ('raw',)
 
@@ -55,14 +56,14 @@ class CheckAdmin(RawMixin, admin.ModelAdmin):
     """Admin model for Check objects."""
 
     list_display = (
-        'id', 'applicant', 'check_type', 'status',
+        'applicant', 'check_type', 'status',
         'result', 'created_at', 'updated_at'
     )
     readonly_fields = (
-        'id', 'created_at', 'applicant', 'check_type',
+        'onfido_id', 'user', 'created_at', 'applicant', 'check_type',
         'status', 'result', 'updated_at', '_raw'
     )
-    list_filter = ('check_type', 'created_at',)
+    list_filter = ('check_type', 'created_at', 'status')
     raw_id_fields = ('applicant', 'user')
     exclude = ('raw',)
 
@@ -78,11 +79,29 @@ class ReportAdmin(RawMixin, admin.ModelAdmin):
         'result', 'created_at', 'updated_at'
     )
     readonly_fields = (
-        'id', 'user', 'onfido_check', 'report_type',
+        'onfido_id', 'user', 'onfido_check', 'report_type',
         'status', 'result', 'created_at', 'updated_at', '_raw'
     )
-    list_filter = ('created_at', 'report_type')
+    list_filter = ('created_at', 'report_type', 'status')
     raw_id_fields = ('onfido_check', 'user')
     exclude = ('raw',)
 
 admin.site.register(Report, ReportAdmin)
+
+
+class EventAdmin(RawMixin, admin.ModelAdmin):
+
+    """Admin model for Event objects."""
+
+    list_display = (
+        'resource_id', 'resource_type', 'action', 'status', 'completed_at'
+    )
+    list_filter = (
+        'action', 'resource_type', 'completed_at'
+    )
+    readonly_fields = (
+        'resource_id', 'resource_type', 'action', 'status', 'completed_at', '_raw'
+    )
+    exclude = ('raw',)
+
+admin.site.register(Event, EventAdmin)

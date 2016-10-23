@@ -96,7 +96,7 @@ class ApiTests(TestCase):
             email='fred@flintstone.com'
         )
         applicant = create_applicant(user)
-        self.assertEqual(applicant.id, data['id'])
+        self.assertEqual(applicant.onfido_id, data['id'])
         self.assertEqual(applicant.user, user)
         self.assertEqual(applicant.created_at, date_parse(data['created_at']))
 
@@ -160,7 +160,7 @@ class ApiTests(TestCase):
         self.assertEqual(Report.objects.count(), 2)
         for r in check_data['reports']:
             # this will only work if the JSON has been parsed correctly
-            report = Report.objects.get(id=r['id'])
+            report = Report.objects.get(onfido_id=r['id'])
             self.assertEqual(report.raw, r)
 
         # confirm that asserts guard input

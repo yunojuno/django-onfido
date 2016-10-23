@@ -16,8 +16,8 @@ from .models import (
     Report
 )
 from .settings import (
-    ONFIDO_API_ROOT,
-    ONFIDO_API_KEY
+    API_ROOT,
+    API_KEY
 )
 
 logger = logging.getLogger(__name__)
@@ -37,10 +37,10 @@ class ApiError(Exception):
 
 def _url(path):
     """Format absolute API URL."""
-    return urlparse.urljoin(ONFIDO_API_ROOT, path)
+    return urlparse.urljoin(API_ROOT, path)
 
 
-def _headers(api_key=ONFIDO_API_KEY):
+def _headers(api_key=API_KEY):
     """Format request headers."""
     return {
         "Authorization": "Token token={0}".format(api_key),
@@ -111,7 +111,7 @@ def create_check(applicant, check_type, reports, **kwargs):
     }
     # merge in the additional kwargs
     data.update(kwargs)
-    response = _post(_url('applicants/{}/checks'.format(applicant.id)), data)
+    response = _post(_url('applicants/{}/checks'.format(applicant.onfido_id)), data)
     logger.debug(response)
     check = Check.objects.create_check(applicant=applicant, raw=response)
     for report in response['reports']:

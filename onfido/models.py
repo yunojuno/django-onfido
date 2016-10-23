@@ -18,8 +18,8 @@ class BaseModel(models.Model):
 
     """Base model used to set timestamps."""
 
-    id = models.CharField(
-        primary_key=True,
+    onfido_id = models.CharField(
+        unique=True,
         max_length=40,
         help_text=_("The id returned from the Onfido API."),
     )
@@ -42,11 +42,14 @@ class BaseModel(models.Model):
         return self
 
     def parse(self, raw_json):
-        """Parses the raw value out into other properties."""
+        """Parse the raw value out into other properties."""
         self.raw = raw_json
-        self.id = self.raw['id']
+        self.onfido_id = self.raw['id']
         self.created_at = date_parse(self.raw['created_at'])
         return self
+
+    def __str__(self):
+        return unicode(self).encode('utf8')
 
 
 class BaseStatusModel(BaseModel):
@@ -107,7 +110,7 @@ class BaseStatusModel(BaseModel):
     class Meta:
         abstract = True
 
-    def update_status(self, event, new_status, timestamp):
+    def update_status(self, event):
         """
         Update the status field of the object and fire signal(s).
 
@@ -124,33 +127,31 @@ class BaseStatusModel(BaseModel):
         them an email etc.
 
         Args:
-            event: string, the name of the event, e.g. 'report.completed'
-            new_status: string, the new status, e.g. 'complete'
-            timestamp: DateTime, from the callback `completed_at` value
+            event: Event object containing the update information
 
         Returns the updated object.
 
         """
         # we're doing a lot of marshalling from JSON to python, so this assert
         # just ensures we do actually have a datetime at this point
-        assert isinstance(timestamp, datetime.datetime)
+        assert isinstance(event.completed_at, datetime.datetime)
         # swap statuses around so we record old / new
-        self.status, old_status = new_status, self.status
-        self.updated_at = timestamp
+        self.status, old_status = event.status, self.status
+        self.updated_at = event.completed_at
         self.save()
         on_status_change.send(
             self.__class__,
             instance=self,
-            event=event,
+            event=event.action,
             status_before=old_status,
-            status_after=new_status
+            status_after=event.status
         )
-        if new_status == 'complete':
+        if event.status == 'complete':
             on_completion.send(self.__class__, instance=self)
         return self
 
     def parse(self, raw_json):
-        """Parses the raw value out into other properties."""
+        """Parse the raw value out into other properties."""
         super(BaseStatusModel, self).parse(raw_json)
         self.result = self.raw['result']
         self.status = self.raw['status']
@@ -180,11 +181,11 @@ class Applicant(BaseModel):
     objects = ApplicantManager()
 
     def __unicode__(self):
-        return self.user.get_full_name() or self.user.username
+        return u"{}".format(self.user.get_full_name() or self.user.username)
 
     def __repr__(self):
-        return u"<Applicant id=%s user='%s'>" % (
-            self.id, self.user.username
+        return u"<Applicant id={} user='{}'>".format(
+            self.id, self.user.id
         )
 
 
@@ -226,24 +227,20 @@ class Check(BaseStatusModel):
     objects = CheckManager()
 
     def __unicode__(self):
-        return (
-            u"%s for %s" % (
-                self.get_check_type_display().capitalize(),
-                self.user.get_full_name() or self.user.username
-            )
+        return u"{} for {}".format(
+            self.get_check_type_display().capitalize(),
+            self.user.get_full_name() or self.user.username
         )
 
     def __repr__(self):
-        return (
-            u"<Check id=%s type='%s' user='%s'>" % (
-                self.id,
-                self.check_type,
-                self.user
-            )
+        return u"<Check id={} type='{}' user='{}'>".format(
+            self.id,
+            self.check_type,
+            self.user
         )
 
     def parse(self, raw_json):
-        """Parses the raw value out into other properties."""
+        """Parse the raw value out into other properties."""
         super(Check, self).parse(raw_json)
         self.check_type = self.raw['type']
         return self
@@ -256,7 +253,11 @@ class ReportManager(models.Manager):
     def create_report(self, check, raw):
         """Create a new Report from the raw JSON."""
         logger.debug("Creating new Onfido report from JSON: %s", raw)
-        return Report(user=check.user, onfido_check=check).parse(raw).save()
+        return (
+            Report(user=check.user, onfido_check=check)
+            .parse(raw)
+            .save()
+        )
 
 
 class Report(BaseStatusModel):
@@ -293,24 +294,91 @@ class Report(BaseStatusModel):
     objects = ReportManager()
 
     def __unicode__(self):
-        return (
-            u"%s for %s" % (
-                self.get_report_type_display().capitalize(),
-                self.user.get_full_name() or self.user.username
-            )
+        return u"{} for {}".format(
+            self.get_report_type_display().capitalize(),
+            self.user.get_full_name() or self.user.username
         )
 
     def __repr__(self):
-        return (
-            u'<Report id=%s type=%s user=%s>' % (
-                self.id,
-                self.report_type,
-                self.user
-            )
+        return u"<Report id={} type='{}' user=%s>".format(
+            self.id,
+            self.report_type,
+            self.user
         )
 
     def parse(self, raw_json):
-        """Parses the raw value out into other properties."""
+        """Parse the raw value out into other properties."""
         super(Report, self).parse(raw_json)
         self.report_type = self.raw['name']
         return self
+
+
+class Event(models.Model):
+
+    """Used to record callback events received from the API."""
+
+    resource_type = models.CharField(
+        max_length=20,
+        help_text=_("The resource_type returned from the API callback.")
+    )
+    resource_id = models.CharField(
+        max_length=40,
+        help_text=_("The Onfido id of the object that was updated, returned from the API."),
+    )
+    action = models.CharField(
+        max_length=20,
+        help_text=_("The event name as returned from the API callback.")
+    )
+    status = models.CharField(
+        max_length=20,
+        help_text=_("The status of the object after the event.")
+    )
+    completed_at = models.DateTimeField(
+        help_text=_("The completed_at timestamp returned from the API callback.")
+    )
+    raw = JSONField(
+        help_text=_("The raw JSON returned from the API."),
+        blank=True, null=True
+    )
+
+    def __unicode__(self):
+        return "{} event occurred on {}.{}".format(
+            self.action, self.resource_type, self.resource_id
+        )
+
+    def __repr__(self):
+        return u"<Event id={} action='{}' resource_id='{}.{}'>".format(
+            self.id, self.action, self.resource_type, self.resource_id
+        )
+
+    def save(self, *args, **kwargs):
+        """Save object and return self (for chaining methods)."""
+        self.full_clean()
+        super(Event, self).save(*args, **kwargs)
+        return self
+
+    def parse(self, raw_json):
+        """Parse the raw value out into other properties."""
+        self.raw = raw_json
+        payload = self.raw['payload']
+        self.resource_type = payload['resource_type']
+        self.action = payload['action']
+        obj = payload['object']
+        self.resource_id = obj['id']
+        self.status = obj['status']
+        self.completed_at = date_parse(obj['completed_at'])
+        return self
+
+    def _resource_manager(self):
+        """Return the appropriate model manager for the resource_type."""
+        assert self.resource_type in ('check', 'report'), (
+            "Unknown resource type: {}".format(self.resource_type)
+        )
+        if self.resource_type == 'check':
+            return Check.objects
+        elif self.resource_type == 'report':
+            return Report.objects
+
+    def resource(self):
+        """Return the underlying Check or Report resource."""
+        return self._resource_manager().get(onfido_id=self.resource_id)
