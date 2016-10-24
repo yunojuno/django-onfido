@@ -1,8 +1,8 @@
 Django-Onfido
 ==============
 
-.. image:: https://travis-ci.org/hugorodgerbrown/django-onfido.svg?branch=master
-    :target: https://travis-ci.org/hugorodgerbrown/django-onfido
+.. image:: https://travis-ci.org/yunojuno/django-onfido.svg?branch=master
+    :target: https://travis-ci.org/yunojuno/django-onfido
 
 Django app for integration with the Onfido API (v2)
 
@@ -21,7 +21,7 @@ The project is available through PyPI as ``django-onfido``:
 .. code::
 
     $ pip install django-onfido
-    
+
 And the main package itself is just ``onfido``:
 
 .. code:: python
@@ -46,7 +46,7 @@ The main use case is as follows:
     DEBUG {u'first_name': u'hugo', u'last_name': u'rb', u'middle_name': None, ...}
     DEBUG Creating new Onfido applicant from JSON: {u'first_name': u'hugo', u'last_name': u'rb', ...}
     <Applicant id=a2c98eae-XXX user='hugo'>
-    
+
 2. Create your check + reports for the applicant:
 
 .. code:: python
@@ -55,7 +55,7 @@ The main use case is as follows:
     >>> create_check(applicant, check_type='standard', reports=['identity', 'right_to_work'])
     >>> assert Check.objects.count() == 1
     >>> assert Report.objects.count() == 2
-    
+
 This will create the **Check** and **Report** objects on Onfido, and store them locally as Django model objects.
 
 3. Wait for callback events to update the status of reports and checks:
@@ -82,7 +82,7 @@ If you want to run the tests manually, make sure you install the requirements, a
     $ pip install -r requirements.txt
     $ pip install django==1.8  # your version goes here
     $ python manage.py test onfido.tests
-    
+
 If you are hacking on the project, please keep coverage up.
 
 Contributing

@@ -19,7 +19,7 @@ setup(
     include_package_data=True,
     description='Django app for integration with Onfido.',
     long_description=README,
-    url='https://github.com/hugorodgerbrown/django-onfido',
+    url='https://github.com/yunojuno/django-onfido',
     author='Hugo Rodger-Brown',
     author_email='code@yunojuno.com',
     maintainer='Hugo Rodger-Brown',
