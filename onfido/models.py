@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext as _
 
+from .api import get
 from .db.fields import JSONField
 from .signals import on_status_change, on_completion
 
@@ -35,6 +36,14 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+    def __str__(self):
+        return unicode(self).encode('utf8')
+
+    @property
+    def href(self):
+        """Return the href from the raw JSON field."""
+        return self.raw['href']
+
     def save(self, *args, **kwargs):
         """Save object and return self (for chaining methods)."""
         self.full_clean()
@@ -48,8 +57,19 @@ class BaseModel(models.Model):
         self.created_at = date_parse(self.raw['created_at'])
         return self
 
-    def __str__(self):
-        return unicode(self).encode('utf8')
+    def pull(self):
+        """
+        Update the object from the remote API.
+
+        Named after the git operation - this will call the API for the
+        latest JSON representation, and then parse and save the object.
+        The API url is taken from the self.href property, and will raise
+        a KeyError if it does not exist.
+
+        Returns the updated object.
+
+        """
+        return self.parse(get(self.href)).save()
 
 
 class BaseStatusModel(BaseModel):
@@ -184,7 +204,7 @@ class Applicant(BaseModel):
         return u"{}".format(self.user.get_full_name() or self.user.username)
 
     def __repr__(self):
-        return u"<Applicant id={} user='{}'>".format(
+        return u"<Applicant id={} user_id={}>".format(
             self.id, self.user.id
         )
 
@@ -233,10 +253,10 @@ class Check(BaseStatusModel):
         )
 
     def __repr__(self):
-        return u"<Check id={} type='{}' user='{}'>".format(
+        return u"<Check id={} type='{}' user_id={}>".format(
             self.id,
             self.check_type,
-            self.user
+            self.user.id
         )
 
     def parse(self, raw_json):
@@ -300,10 +320,10 @@ class Report(BaseStatusModel):
         )
 
     def __repr__(self):
-        return u"<Report id={} type='{}' user=%s>".format(
+        return u"<Report id={} type='{}' user_id={}>".format(
             self.id,
             self.report_type,
-            self.user
+            self.user.id
         )
 
     def parse(self, raw_json):

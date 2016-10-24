@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.db.models import Model
 from django.test import TestCase
 
+from ..api import ApiError
 from ..models import (
     BaseModel,
     BaseStatusModel,
@@ -47,6 +48,12 @@ class BaseModelTests(TestCase):
         obj = TestBaseModel()
         self.assertEqual(obj.save(), obj)
 
+    def test_href(self):
+        """Test the href property."""
+        raw = {'href': 'foo'}
+        obj = TestBaseModel(raw=raw)
+        self.assertEqual(obj.href, raw['href'])
+
     def test_parse(self):
         """Test the parse method."""
         data = {
@@ -59,6 +66,44 @@ class BaseModelTests(TestCase):
         obj = TestBaseModel().parse(data)
         self.assertEqual(obj.onfido_id, data['id'])
         self.assertEqual(obj.created_at, date_parse(data['created_at']))
+
+    @mock.patch.object(TestBaseModel, 'save')
+    @mock.patch('onfido.models.get')
+    def test_pull(self, mock_get, mock_save):
+        """Test the pull method."""
+        data = {
+            "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
+            "created_at": "2016-10-15T19:05:50Z",
+            "status": "awaiting_applicant",
+            "type": "standard",
+            "result": "clear",
+            "href": "/"
+        }
+        mock_get.return_value = data
+        obj = TestBaseModel(raw={'href': '/'})
+        obj.pull()
+        # check that it has parsed the return value
+        self.assertEqual(obj.onfido_id, data['id'])
+        self.assertEqual(obj.created_at, date_parse(data['created_at']))
+        # check that it has called the save method
+        mock_save.assert_called_once_with()
+
+        # check what happens if href is missing
+        obj = TestBaseModel(raw={})
+        self.assertRaises(KeyError, obj.pull)
+
+        # check what happens if API fails
+        obj = TestBaseModel(raw={'href': '/'})
+        response = mock.Mock()
+        response.json.return_value = {
+            "error": {
+                "fields": {},
+                "message": "Authorization error: please re-check your credentials",
+                "type": "authorization_error"
+            }
+        }
+        mock_get.side_effect = ApiError(response)
+        self.assertRaises(ApiError, obj.pull)
 
 
 class BaseStatusModelTests(TestCase):
@@ -193,9 +238,9 @@ class ApplicantTests(TestCase):
     def test_unicode_str_repr(self):
         """Test string representations handle unicode."""
         applicant = self.applicant
-        print str(applicant)
-        print unicode(applicant)
-        print repr(applicant)
+        self.assertIsNotNone(str(applicant))
+        self.assertIsNotNone(unicode(applicant))
+        self.assertIsNotNone(repr(applicant))
 
 
 class CheckManagerTests(TestCase):
@@ -381,9 +426,9 @@ class ReportTests(TestCase):
     def test_unicode_str_repr(self):
         """Test string representations handle unicode."""
         report = self.report
-        print str(report)
-        print unicode(report)
-        print repr(report)
+        self.assertIsNotNone(str(report))
+        self.assertIsNotNone(unicode(report))
+        self.assertIsNotNone(repr(report))
 
     def test_parse(self):
         """Test the parse_raw method."""
