@@ -10,6 +10,7 @@ from django.utils.translation import ugettext as _
 
 from .api import get
 from .db.fields import JSONField
+from .settings import scrub_report_data
 from .signals import on_status_change, on_completion
 
 logger = logging.getLogger(__name__)
@@ -342,7 +343,15 @@ class Report(BaseStatusModel):
         )
 
     def parse(self, raw_json):
-        """Parse the raw value out into other properties."""
+        """
+        Parse the raw value out into other properties.
+
+        Before parsing the data, this method will call the
+        scrub_report_data function to remove sensitive data
+        so that it is not saved into the local object.
+
+        """
+        scrub_report_data(raw_json)
         super(Report, self).parse(raw_json)
         self.report_type = self.raw['name']
         return self

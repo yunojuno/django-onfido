@@ -467,6 +467,22 @@ class ReportTests(TestCase):
         self.assertEqual(report.result, "clear")
         self.assertEqual(report.report_type, "identity")
 
+    def test_parse_scrubs_data(self):
+        """Test the parse method also removes sensitive data."""
+        data = {
+            "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
+            "created_at": "2016-10-15T19:05:50Z",
+            "status": "awaiting_applicant",
+            "result": "clear",
+            "name": "identity",
+            "breakdown": {},
+            "properties": {}
+        }
+        report = Report().parse(data)
+        # the default report scrubber should have removed data:
+        self.assertFalse('breakdown' in report.raw)
+        self.assertFalse('properties' in report.raw)
+
 
 class EventTests(TestCase):
 
