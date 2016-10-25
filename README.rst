@@ -7,6 +7,9 @@ Django-Onfido
 .. image:: https://badge.fury.io/py/django-onfido.svg
     :target: https://badge.fury.io/py/django-onfido
 
+.. image:: https://codecov.io/gh/yunojuno/django-onfido/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/yunojuno/django-onfido
+
 Django app for integration with the Onfido API (v2)
 
 Background
