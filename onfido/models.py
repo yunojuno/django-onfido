@@ -57,19 +57,34 @@ class BaseModel(models.Model):
         self.created_at = date_parse(self.raw['created_at'])
         return self
 
+    def fetch(self):
+        """
+        Fetch the object JSON from the remote API.
+
+        Named after the git operation - this will call the API for the
+        latest JSON representation, and update the local fields, but will
+        not save the updates. This is useful for inspecting the API response
+        without making permanent changes to the object. It can also be used
+        to interact with the API without saving an objects:
+
+        >>> obj = Check(onfido_id='123').fetch()
+
+        Returns the updated object (unsaved).
+
+        """
+        return self.parse(get(self.href))
+
     def pull(self):
         """
         Update the object from the remote API.
 
-        Named after the git operation - this will call the API for the
-        latest JSON representation, and then parse and save the object.
-        The API url is taken from the self.href property, and will raise
-        a KeyError if it does not exist.
+        Named after the git operation - this will call fetch(), and
+        then save the object.
 
-        Returns the updated object.
+        Returns the updated object (saved).
 
         """
-        return self.parse(get(self.href)).save()
+        return self.fetch().save()
 
 
 class BaseStatusModel(BaseModel):

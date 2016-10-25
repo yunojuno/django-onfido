@@ -67,10 +67,10 @@ class BaseModelTests(TestCase):
         self.assertEqual(obj.onfido_id, data['id'])
         self.assertEqual(obj.created_at, date_parse(data['created_at']))
 
-    @mock.patch.object(TestBaseModel, 'save')
+    @mock.patch.object(BaseModel, 'save')
     @mock.patch('onfido.models.get')
-    def test_pull(self, mock_get, mock_save):
-        """Test the pull method."""
+    def test_fetch(self, mock_get, mock_save):
+        """Test the fetch method calls the API."""
         data = {
             "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
             "created_at": "2016-10-15T19:05:50Z",
@@ -81,12 +81,13 @@ class BaseModelTests(TestCase):
         }
         mock_get.return_value = data
         obj = TestBaseModel(raw={'href': '/'})
-        obj.pull()
-        # check that it has parsed the return value
+        obj.fetch()
+        # check that it has update raw, but parsed the return value
+        self.assertEqual(obj.raw, data)
         self.assertEqual(obj.onfido_id, data['id'])
         self.assertEqual(obj.created_at, date_parse(data['created_at']))
-        # check that it has called the save method
-        mock_save.assert_called_once_with()
+        # check that it has **not** called the save method
+        mock_save.assert_not_called()
 
         # check what happens if href is missing
         obj = TestBaseModel(raw={})
@@ -104,6 +105,25 @@ class BaseModelTests(TestCase):
         }
         mock_get.side_effect = ApiError(response)
         self.assertRaises(ApiError, obj.pull)
+
+    @mock.patch.object(BaseModel, 'save')
+    @mock.patch.object(BaseModel, 'fetch')
+    def test_pull(self, mock_fetch, mock_save):
+        """Test the pull method calls fetch and save."""
+        data = {
+            "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
+            "created_at": "2016-10-15T19:05:50Z",
+            "status": "awaiting_applicant",
+            "type": "standard",
+            "result": "clear",
+            "href": "/"
+        }
+        obj = TestBaseModel(raw={'href': '/'})
+        mock_fetch.return_value = obj
+        obj.pull()
+        # check that it has parsed the return value
+        mock_fetch.assert_called_once_with()
+        mock_save.assert_called_once_with()
 
 
 class BaseStatusModelTests(TestCase):
