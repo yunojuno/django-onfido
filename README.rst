@@ -4,6 +4,9 @@ Django-Onfido
 .. image:: https://travis-ci.org/yunojuno/django-onfido.svg?branch=master
     :target: https://travis-ci.org/yunojuno/django-onfido
 
+.. image:: https://badge.fury.io/py/django-onfido.svg
+    :target: https://badge.fury.io/py/django-onfido
+
 Django app for integration with the Onfido API (v2)
 
 Background
@@ -38,7 +41,7 @@ The main use case is as follows:
 .. code:: python
 
     >>> from django.contrib.auth.models import User
-    >>> from onfido.api import create_applicant
+    >>> from onfido.helpers import create_applicant
     >>> user = User.objects.last()  # any old one will do
     >>> applicant = create_applicant(user)
     DEBUG Making POST request to https://api.onfido.com/v2/applicants
@@ -51,8 +54,8 @@ The main use case is as follows:
 
 .. code:: python
 
-    >>> from onfido.api import create_check
-    >>> create_check(applicant, check_type='standard', reports=['identity', 'right_to_work'])
+    >>> from onfido.helpers import create_check
+    >>> create_check(applicant, 'standard', ['identity', 'right_to_work'])
     >>> assert Check.objects.count() == 1
     >>> assert Report.objects.count() == 2
 
@@ -64,6 +67,41 @@ This will create the **Check** and **Report** objects on Onfido, and store them 
 
     DEBUG Received Onfido callback: {"payload":{...}}
     DEBUG Processing 'check.completed' action on check.bd8232c4-...
+
+The raw JSON
+returned from the API for a given entity (Applicant, Check, Report) is stored on
+the model as the ``raw`` attribute, and this can be parsed into the relevant model
+attributes. (Yes this does mean duplication of data.) The core pattern for interaction with the API on a per-object basis is a read-only
+fetch / pull pattern (analagous to git operations of the same name). If you call the ``fetch`` method
+on an object, it will use the ``href`` value in the raw JSON to fetch the latest
+data from the API and parse it, but without saving the changes. If you want
+to update the object, use the ``pull`` method instead.
+
+The ``Report`` object is a special case, where the raw data from the API often contains sensitive information that you may not wish to store locally (passport numbers, Visa information, personal data). In order to get around this, there is a ``scrub_report_data`` function that will remove certain attributes of the raw data before it is parsed. By default this will remove the ``breakdown`` and ``properties`` elements.
+
+.. code:: python
+
+    >>> check = Check.objects.last()
+    >>> check.raw
+    {
+        "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
+        "created_at": "2016-10-15T19:05:50Z",
+        "status": "awaiting_applicant",
+        "type": "standard",
+        "result": "clear",
+        "href": "applicants/123/checks/456"
+    }
+    >>> check.fetch()  # fetch and parse the latest raw data
+    >>> check.pull()  # calls fetch and then saves the object
+
+Settings
+--------
+
+The following settings can be set / overridden in the default Django settings module:
+
+* ``ONFIDO_API_KEY``: your API key, found under **setting** in your Onfido account.
+* ``ONFIDO_LOG_EVENTS``: if True (False) then callback events from the API will also be recorded as ``Event`` objects.
+* ``ONFIDO_REPORT_SCRUBBER``: a function that, if supplied, will control the scrubbing of sensitive data from ``Report`` objects. The default implementation will remove **breakdown** and **properties**.
 
 Tests
 -----
