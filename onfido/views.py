@@ -13,6 +13,7 @@ import logging
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
+from .decorators import verify_signature
 from .models import Check, Report, Event
 from .settings import LOG_EVENTS
 
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
+@verify_signature()
 def status_update(request):
     """
     Handle event callbacks from the API.
@@ -30,7 +32,11 @@ def status_update(request):
     without having to set up request objects.
 
     NB This view function will always return a 200 status -
-    in order to prevent Onfido from endlessly retrying.
+    in order to prevent Onfido from endlessly retrying. The
+    only exceptions to this are caused by the verify_signature
+    decorator - if it cannot verify the callback, then it will
+    return a 403 - which should be ok, as if Onfido sends the
+    request it should never fail...
 
     """
     logger.debug("Received Onfido callback: {}".format(request.body))

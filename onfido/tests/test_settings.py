@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import mock
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
 
 from ..settings import DEFAULT_REPORT_SCRUBBER
 
 
 class SettingsTests(TestCase):
 
-    """settings module tests."""
+    """onfido.settings module tests."""
 
     def test_default_report_scrubber(self):
         """Test the report_scrubber default function."""

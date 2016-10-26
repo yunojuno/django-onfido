@@ -10,14 +10,13 @@ from ..models import (
     Check,
     Report,
     Event,
-    BaseStatusModel
 )
 from ..views import status_update
 
 
 class ViewTests(TestCase):
 
-    """Test for views module."""
+    """onfido.views module tests."""
 
     def test_status_update(self):
         """Test the status_update view function."""
@@ -35,6 +34,7 @@ class ViewTests(TestCase):
         }
         factory = RequestFactory()
 
+        @mock.patch('onfido.decorators._match', lambda x, y: True)
         def assert_update(data, message):
             request = factory.post('/', data=json.dumps(data), content_type='application/json')
             response = status_update(request)

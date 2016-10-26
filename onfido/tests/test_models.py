@@ -34,6 +34,8 @@ class TestBaseStatusModel(BaseStatusModel):
 
 class BaseModelTests(TestCase):
 
+    """onfido.models.BaseModel tests."""
+
     def test_defaults(self):
         obj = TestBaseModel()
         self.assertEqual(obj.id, None)
@@ -110,14 +112,6 @@ class BaseModelTests(TestCase):
     @mock.patch.object(BaseModel, 'fetch')
     def test_pull(self, mock_fetch, mock_save):
         """Test the pull method calls fetch and save."""
-        data = {
-            "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
-            "created_at": "2016-10-15T19:05:50Z",
-            "status": "awaiting_applicant",
-            "type": "standard",
-            "result": "clear",
-            "href": "/"
-        }
         obj = TestBaseModel(raw={'href': '/'})
         mock_fetch.return_value = obj
         obj.pull()
@@ -127,6 +121,8 @@ class BaseModelTests(TestCase):
 
 
 class BaseStatusModelTests(TestCase):
+
+    """onfido.models.BaseStatusModel tests."""
 
     def test_defaults(self):
         obj = TestBaseStatusModel()
@@ -209,7 +205,8 @@ class BaseStatusModelTests(TestCase):
 
 class ApplicantManagerTests(TestCase):
 
-    """ApplicantManager tests."""
+    """onfido.models.ApplicantManager tests."""
+
     TEST_DATA = {
         "id": "14d2335e-4586-4ac4-aecd-b18296e7d675",
         "created_at": "2016-10-15T19:05:07Z",
@@ -232,7 +229,7 @@ class ApplicantManagerTests(TestCase):
 
 class ApplicantTests(TestCase):
 
-    """Applicant models tests."""
+    """onfido.model.Applicant tests."""
 
     def setUp(self):
         self.user = User(id=1, first_name=u"œ∑´®†¥")
@@ -265,7 +262,7 @@ class ApplicantTests(TestCase):
 
 class CheckManagerTests(TestCase):
 
-    """ApplicantManager tests."""
+    """onfido.models.ApplicantManager tests."""
 
     @mock.patch.object(BaseModel, 'full_clean')
     def test_create_check(self, mock_clean):
@@ -294,7 +291,7 @@ class CheckManagerTests(TestCase):
 
 class CheckTests(TestCase):
 
-    """Check models tests."""
+    """onfido.models.Check tests."""
 
     def setUp(self):
         self.user = User.objects.create_user(username='fred', first_name=u"œ∑´®†¥")
@@ -354,7 +351,8 @@ class CheckTests(TestCase):
 
 class ReportManagerTests(TestCase):
 
-    """ReportManager tests."""
+    """onfido.models.ReportManager tests."""
+
     TEST_DATA = {
         "created_at": "2016-10-18T16:02:08Z",
         "id": "1ffd3e8a-da71-4674-a245-8b52f1492191",
@@ -396,7 +394,7 @@ class ReportManagerTests(TestCase):
 
 class ReportTests(TestCase):
 
-    """Report models tests."""
+    """onfido.models.Report tests."""
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -486,7 +484,7 @@ class ReportTests(TestCase):
 
 class EventTests(TestCase):
 
-    """Event models tests."""
+    """onfido.models.Event tests."""
 
     TEST_DATA = {
         "payload": {

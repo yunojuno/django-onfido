@@ -18,7 +18,7 @@ from ..helpers import (
 
 class HelperTests(TestCase):
 
-    """Helper module tests."""
+    """onfido.helper module tests."""
 
     @mock.patch('onfido.helpers.post')
     def test_create_applicant(self, mock_post):

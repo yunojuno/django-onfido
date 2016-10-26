@@ -15,7 +15,7 @@ from ..api import (
 
 class ApiTests(TestCase):
 
-    """Api module tests (not testing the API itself)."""
+    """onfido.api module tests."""
 
     def test__headers(self):
         """Test the _headers function return valid dict."""

@@ -14,7 +14,7 @@ from ..admin import (
 
 class RawMixinTests(TestCase):
 
-    """Tests for RawMixin admin class."""
+    """onfido.admin.RawMixin tests."""
 
     def test__raw(self):
         mixin = RawMixin()
@@ -29,7 +29,7 @@ class RawMixinTests(TestCase):
 
 class UserMixinTests(TestCase):
 
-    """Tests for UserMixin admin class."""
+    """onfido.admin.UserMixin tests."""
 
     def test__user(self):
 
