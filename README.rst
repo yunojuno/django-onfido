@@ -1,6 +1,8 @@
 Django-Onfido
 ==============
 
+Django app for integration with the Onfido API (v2)
+
 .. image:: https://travis-ci.org/yunojuno/django-onfido.svg?branch=master
     :target: https://travis-ci.org/yunojuno/django-onfido
 
@@ -9,8 +11,6 @@ Django-Onfido
 
 .. image:: https://codecov.io/gh/yunojuno/django-onfido/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/yunojuno/django-onfido
-
-Django app for integration with the Onfido API (v2)
 
 Background
 ----------
@@ -109,7 +109,7 @@ The following settings can be specified in the Django settings module, or in env
 * ``ONFIDO_API_KEY``: your API key, found under **setting** in your Onfido account.
 * ``ONFIDO_LOG_EVENTS``: (optional) if True then callback events from the API will also be recorded as ``Event`` objects. Defaults to False.
 * ``ONFIDO_REPORT_SCRUBBER``: (optional) a function that is used to scrub sensitive data from ``Report`` objects. The default implementation will remove **breakdown** and **properties**.
-* ``ONFIDO_WEBHOOK_TOKEN``: the Onfido webhook callback token - must be supplied if using webhooks.
+* ``ONFIDO_WEBHOOK_TOKEN``: (optional) the Onfido webhook callback token - required if using webhooks.
 
 Tests
 -----
