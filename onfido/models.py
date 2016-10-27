@@ -88,6 +88,21 @@ class BaseModel(models.Model):
         return self.fetch().save()
 
 
+class BaseQuerySet(models.QuerySet):
+
+    """Custom queryset for models subclassing BaseModel."""
+
+    def fetch(self):
+        """Call fetch method on all objects in the queryset."""
+        for obj in self:
+            obj.fetch()
+
+    def pull(self):
+        """Call pull method on all objects in the queryset."""
+        for obj in self:
+            obj.pull()
+
+
 class BaseStatusModel(BaseModel):
 
     """Base class for models with a status and result field."""
@@ -194,7 +209,7 @@ class BaseStatusModel(BaseModel):
         return self
 
 
-class ApplicantManager(models.Manager):
+class ApplicantQuerySet(BaseQuerySet):
 
     """Custom Applicant queryset."""
 
@@ -214,7 +229,7 @@ class Applicant(BaseModel):
         related_name='onfido_applicant'
     )
 
-    objects = ApplicantManager()
+    objects = ApplicantQuerySet.as_manager()
 
     def __unicode__(self):
         return u"{}".format(self.user.get_full_name() or self.user.username)
@@ -225,7 +240,7 @@ class Applicant(BaseModel):
         )
 
 
-class CheckManager(models.Manager):
+class CheckQuerySet(BaseQuerySet):
 
     """Check model manager."""
 
@@ -260,7 +275,7 @@ class Check(BaseStatusModel):
         help_text=_("See https://documentation.onfido.com/#check-types")
     )
 
-    objects = CheckManager()
+    objects = CheckQuerySet.as_manager()
 
     def __unicode__(self):
         return u"{} for {}".format(
@@ -282,9 +297,9 @@ class Check(BaseStatusModel):
         return self
 
 
-class ReportManager(models.Manager):
+class ReportQuerySet(BaseQuerySet):
 
-    """Report model manager."""
+    """Report model queryset."""
 
     def create_report(self, check, raw):
         """Create a new Report from the raw JSON."""
@@ -327,7 +342,7 @@ class Report(BaseStatusModel):
         help_text=_("The name of the report - see https://documentation.onfido.com/#reports")
     )
 
-    objects = ReportManager()
+    objects = ReportQuerySet.as_manager()
 
     def __unicode__(self):
         return u"{} for {}".format(

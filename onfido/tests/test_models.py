@@ -7,16 +7,18 @@ from dateutil.parser import parse as date_parse
 from django.contrib.auth.models import User
 from django.db.models import Model
 from django.test import TestCase
+from django.utils.timezone import now as tz_now
 
 from ..api import ApiError
 from ..models import (
     BaseModel,
+    BaseQuerySet,
     BaseStatusModel,
     Applicant,
     Check,
     Report,
     Event,
-    CheckManager
+    CheckQuerySet
 )
 
 
@@ -118,6 +120,46 @@ class BaseModelTests(TestCase):
         # check that it has parsed the return value
         mock_fetch.assert_called_once_with()
         mock_save.assert_called_once_with()
+
+
+class BaseQuerySetTests(TestCase):
+
+    """onfido.models.BaseQuerySet tests."""
+
+    def create_applicant(self, username):
+        """Create new Applicant and user."""
+        data = {'id': username, 'created_at': tz_now().isoformat()}
+        user = User.objects.create_user(username)
+        applicant = Applicant.objects.create_applicant(user, raw=data)
+        return applicant
+
+    @mock.patch.object(BaseModel, 'fetch')
+    def test_fetch(self, mock_fetch):
+        """Test the queryset calls fetch on all objects."""
+        # once applicant, one call
+        self.create_applicant('fred')
+        Applicant.objects.all().fetch()
+        mock_fetch.assert_called_once_with()
+
+        # add another applicant, should now call twice
+        self.create_applicant('ginger')
+        mock_fetch.reset_mock()
+        Applicant.objects.all().fetch()
+        self.assertEqual(mock_fetch.call_count, 2)
+
+    @mock.patch.object(BaseModel, 'pull')
+    def test_pull(self, mock_pull):
+        """Test the queryset calls fetch on all objects."""
+        # once applicant, one call
+        self.create_applicant('fred')
+        Applicant.objects.all().pull()
+        mock_pull.assert_called_once_with()
+
+        # add another applicant, should now call twice
+        self.create_applicant('ginger')
+        mock_pull.reset_mock()
+        Applicant.objects.all().pull()
+        self.assertEqual(mock_pull.call_count, 2)
 
 
 class BaseStatusModelTests(TestCase):
@@ -527,7 +569,7 @@ class EventTests(TestCase):
         event.resource_type = 'report'
         self.assertEqual(event._resource_manager(), Report.objects)
 
-    @mock.patch.object(CheckManager, 'get')
+    @mock.patch.object(CheckQuerySet, 'get')
     def test_resource(self, mock_get):
         """Test the resource method."""
         event = Event().parse(EventTests.TEST_DATA)
