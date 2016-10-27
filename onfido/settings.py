@@ -4,26 +4,23 @@ from os import getenv
 
 from django.conf import settings
 
-# read the api key in from settings, fall back to environment
-API_KEY = (
-    getattr(settings, 'ONFIDO_API_KEY', None) or
-    getenv('ONFIDO_API_KEY')
-)
-
 # the API HTTP root url
 API_ROOT = "https://api.onfido.com/v2/"
 
-# flag to turn event logging on/off
-LOG_EVENTS = (
-    getattr(settings, 'ONFIDO_LOG_EVENTS', False) or
-    getenv('ONFIDO_LOG_EVENTS', False)
+# API key from evnironment by default
+API_KEY = (
+    getenv('ONFIDO_API_KEY', None) or
+    getattr(settings, 'ONFIDO_API_KEY', None)
 )
 
-# token used to verify callbacks - see https://documentation.onfido.com/#webhooks
-WEBHOOK_TOKEN = (
-    getattr(settings, 'ONFIDO_WEBHOOK_TOKEN', None) or
-    getenv('ONFIDO_WEBHOOK_TOKEN')
-)
+# Set to False to turn off event logging
+LOG_EVENTS = getattr(settings, 'ONFIDO_LOG_EVENTS', True)
+
+# Webhook token - see https://documentation.onfido.com/#webhooks
+WEBHOOK_TOKEN = getattr(settings, 'ONFIDO_WEBHOOK_TOKEN', None)
+
+# Set to True to bypass request verification (NOT RECOMMENDED)
+TEST_MODE = getattr(settings, 'ONFIDO_TEST_MODE', False)
 
 
 def DEFAULT_REPORT_SCRUBBER(raw):

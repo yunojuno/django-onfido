@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import mock
 
+from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse, HttpResponseForbidden
 from django.test import (
     TestCase,
-    RequestFactory
+    RequestFactory,
+    override_settings
 )
 from ..decorators import (
     _hmac,
@@ -74,7 +76,8 @@ class DecoratorTests(TestCase):
         request = self.get_request(signature=None)
         self.assertFalse(_match(TEST_WEBHOOK_TOKEN, request))
 
-    def test_verify_signature(self):
+    @mock.patch('onfido.decorators._match')
+    def test_verify_signature(self, mock_match):
         """Test the view function decorator itself."""
 
         @verify_signature()
@@ -84,9 +87,26 @@ class DecoratorTests(TestCase):
 
         request = self.get_request()
 
+        # import module as we want to manipulate the WEBHOOK_TOKEN
+        from .. import decorators
+
+        # in TEST_MODE we return immediately
+        decorators.TEST_MODE = True
+        decorators.WEBHOOK_TOKEN = None
+        mock_match.reset_mock()
+        request_function(request)
+        mock_match.assert_not_called()
+
+        # without a WEBHOOK_TOKEN we should get an error
+        decorators.TEST_MODE = False
+        decorators.WEBHOOK_TOKEN = None
+        self.assertRaises(ImproperlyConfigured, request_function, request)
+        mock_match.assert_not_called()
+
         # mock out _hmac so we can force a pass / fail
-        with mock.patch('onfido.decorators._match') as mock_match:
-            mock_match.return_value = True
-            self.assertIsInstance(request_function(request), HttpResponse)
-            mock_match.return_value = False
-            self.assertIsInstance(request_function(request), HttpResponseForbidden)
+        decorators.TEST_MODE = False
+        decorators.WEBHOOK_TOKEN = TEST_WEBHOOK_TOKEN
+        mock_match.return_value = True
+        self.assertIsInstance(request_function(request), HttpResponse)
+        mock_match.return_value = False
+        self.assertIsInstance(request_function(request), HttpResponseForbidden)

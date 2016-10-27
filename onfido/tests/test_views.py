@@ -18,7 +18,8 @@ class ViewTests(TestCase):
 
     """onfido.views module tests."""
 
-    def test_status_update(self):
+    @mock.patch('onfido.decorators.WEBHOOK_TOKEN')
+    def test_status_update(self, *args):
         """Test the status_update view function."""
         data = {
             "payload": {
@@ -80,12 +81,14 @@ class ViewTests(TestCase):
         check.onfido_id = data['payload']['object']['id']
         check.save()
 
-        # first without logging events
-        with mock.patch('onfido.views.LOG_EVENTS', False):
-            assert_update(data, 'Update processed.')
-            self.assertFalse(Event.objects.exists())
+        # validate that the LOG_EVENTS setting is honoured
+        with mock.patch.object(Event, 'save') as mock_save:
 
-        # force creation of event
-        with mock.patch('onfido.views.LOG_EVENTS', True):
-            assert_update(data, 'Update processed.')
-            self.assertTrue(Event.objects.exists())
+            with mock.patch('onfido.views.LOG_EVENTS', False):
+                assert_update(data, 'Update processed.')
+                mock_save.assert_not_called()
+
+            # force creation of event
+            with mock.patch('onfido.views.LOG_EVENTS', True):
+                assert_update(data, 'Update processed.')
+                mock_save.assert_called_once_with()

@@ -1,27 +1,30 @@
 # -*- coding: utf-8 -*-
-"""onfido views.
-
-The Onfido views are mainly callback handlers for the updates
-in status' of checks and reports.
-
-See https://documentation.onfido.com/?shell#webhooks
-
-"""
+"""onfido function decorators."""
 from functools import wraps
 import hashlib
 import hmac
 import logging
 
+from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseForbidden
 
-from .settings import WEBHOOK_TOKEN
+from .settings import WEBHOOK_TOKEN, TEST_MODE
 
 
 logger = logging.getLogger(__name__)
 
 
 def _hmac(token, text):
-    """Calculate SHA1 HMAC digest from request body and token."""
+    """
+    Calculate SHA1 HMAC digest from request body and token.
+
+    Args:
+        token: string, the webhook token from Onfido API settings.
+        text: string, the text to hash.
+
+    Return the SHA1 HMAC as a string.
+
+    """
     return hmac.new(token, text, hashlib.sha1).hexdigest()
 
 
@@ -30,12 +33,11 @@ def _match(token, request):
     Calculate signature and return True if it matches header.
 
     Args:
-        token: string, the webhook_token. If None is passed in then the
-            match is ignored. A warning will be logged.
+        token: string, the webhook_token.
         request: an HttpRequest object from which the body content and
             X-Signature header will be extracted and matched.
 
-    Returns if there is a match.
+    Returns True if there is a match.
 
     """
     try:
@@ -44,7 +46,6 @@ def _match(token, request):
         logger.warn("Onfido callback missing X-Signature - this may be an unauthorised request.")
         return False
     except Exception:
-        logger.exception("Onfido callback cannot be verified.")
         return False
 
 
@@ -54,7 +55,10 @@ def verify_signature():
 
     This function uses the WEBHOOK_TOKEN specified in settings to calculate
     the HMAC. If it doesn't exist, then this decorator will immediately fail
-    hard with an ImproperlyConfigure exception.
+    hard with an ImproperlyConfigured exception.
+
+    If TEST_MODE is on (ONFIDO_TEST_MODE setting) then the verification will
+    be ignored.
 
     See: https://documentation.onfido.com/#webhooks
 
@@ -76,9 +80,18 @@ def verify_signature():
     def decorator(func):
         @wraps(func)
         def _wrapped_func(request, *args, **kwargs):
+            if TEST_MODE:
+                logger.debug("Ignoring Onfido callback verification (ONFIDO_TEST_MODE enabled)")
+                return func(request, *args, **kwargs)
+            if not WEBHOOK_TOKEN:
+                raise ImproperlyConfigured("Missing ONFIDO_WEBHOOK_TOKEN")
             if _match(WEBHOOK_TOKEN, request):
                 return func(request, *args, **kwargs)
             else:
+                # logging as a warning means it'll likely appear in logs,
+                # but it's by design - if people are sending invalid requests
+                # we need to know.
+                logger.warn("Onfido callback request verification failed.")
                 return HttpResponseForbidden("Invalid X-Signature")
         return _wrapped_func
     return decorator

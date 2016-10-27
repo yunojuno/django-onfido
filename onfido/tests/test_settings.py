@@ -3,12 +3,20 @@ import mock
 
 from django.test import TestCase
 
-from ..settings import DEFAULT_REPORT_SCRUBBER
+from .. import settings
 
 
 class SettingsTests(TestCase):
 
     """onfido.settings module tests."""
+
+    def test_defaults(self):
+        """Confirm the default settings exist."""
+        self.assertEqual(settings.API_ROOT, "https://api.onfido.com/v2/")
+        self.assertEqual(settings.API_KEY, None)
+        self.assertEqual(settings.LOG_EVENTS, True)
+        self.assertEqual(settings.WEBHOOK_TOKEN, None)
+        self.assertEqual(settings.TEST_MODE, False)
 
     def test_default_report_scrubber(self):
         """Test the report_scrubber default function."""
@@ -18,7 +26,7 @@ class SettingsTests(TestCase):
             'properties': {}
         }
         # default function should remove breakdown and properties
-        data = DEFAULT_REPORT_SCRUBBER(data)
+        data = settings.DEFAULT_REPORT_SCRUBBER(data)
         self.assertFalse('breakdown' in data)
         self.assertFalse('properties' in data)
 
