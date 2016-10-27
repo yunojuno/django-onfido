@@ -139,20 +139,20 @@ class ReportAdmin(RawMixin, UserMixin, admin.ModelAdmin):
 admin.site.register(Report, ReportAdmin)
 
 
-class EventAdmin(RawMixin, admin.ModelAdmin):
+class EventAdmin(RawMixin, UserMixin, admin.ModelAdmin):
 
     """Admin model for Event objects."""
 
     list_display = (
-        'resource_id', 'resource_type', 'action',
-        'status', 'completed_at'
+        'onfido_id',  'resource_type', '_user', 'action',
+        'status', 'created_at'
     )
     list_filter = (
-        'action', 'resource_type', 'completed_at'
+        'action', 'resource_type', 'status', 'created_at'
     )
     readonly_fields = (
-        'resource_id', 'resource_type', 'action',
-        'status', 'completed_at', '_raw'
+        'onfido_id', 'resource_type', 'action',
+        'status', 'created_at', '_raw'
     )
     search_fields = ('resource_id',)
     exclude = ('raw',)

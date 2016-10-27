@@ -43,7 +43,7 @@ def status_update(request):
     data = json.loads(request.body)
     try:
         event = Event()
-        resource = event.parse(data).resource()
+        resource = event.parse(data).resource
         resource.update_status(event)
         if LOG_EVENTS:
             event.save()
@@ -55,10 +55,10 @@ def status_update(request):
         logger.warn("Unknown Onfido resource type: %s", event.resource_type)
         return HttpResponse("Unknown resource type.")
     except Check.DoesNotExist:
-        logger.warn("Onfido check does not exist: %s", event.resource_id)
+        logger.warn("Onfido check does not exist: %s", event.onfido_id)
         return HttpResponse("Check not found.")
     except Report.DoesNotExist:
-        logger.warn("Onfido report does not exist: %s", event.resource_id)
+        logger.warn("Onfido report does not exist: %s", event.onfido_id)
         return HttpResponse("Report not found.")
     except Exception:
         logger.exception("Onfido update could not be processed.")

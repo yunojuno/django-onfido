@@ -67,9 +67,12 @@ class ViewTests(TestCase):
             assert_update(data, 'Unknown error.')
 
         # valid payload / object
-        with mock.patch.object(Event, 'resource') as mock_resource:
-            mock_check = mock.Mock(spec=Check)
-            mock_resource.return_value = mock_check
+        mock_check = mock.Mock(spec=Check)
+        with mock.patch(
+            'onfido.models.Event.resource',
+            new_callable=mock.PropertyMock(return_value=mock_check)
+        ):
+            # mock_resource.return_value = mock_check
             assert_update(data, 'Update processed.')
             mock_check.update_status.assert_called_once()
 

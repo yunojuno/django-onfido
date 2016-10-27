@@ -205,14 +205,14 @@ class BaseStatusModelTests(TestCase):
         event = Event(
             action='form.opened',
             status='after',
-            resource_id='foo',
+            onfido_id='foo',
             resource_type='check',
-            completed_at=True
+            created_at=None
         )
         # try passing in something that is not a datetime
         self.assertRaises(AssertionError, obj.update_status, event)
 
-        event.completed_at = now
+        event.created_at = now
         obj = obj.update_status(event)
         self.assertEqual(obj.status, event.status)
         self.assertEqual(obj.updated_at, now)
@@ -571,20 +571,27 @@ class EventTests(TestCase):
 
     @mock.patch.object(CheckQuerySet, 'get')
     def test_resource(self, mock_get):
-        """Test the resource method."""
+        """Test the resource property."""
         event = Event().parse(EventTests.TEST_DATA)
-        event.resource()
-        mock_get.assert_called_once_with(onfido_id=event.resource_id)
+        event.resource
+        mock_get.assert_called_once_with(onfido_id=event.onfido_id)
+
+    @mock.patch.object(CheckQuerySet, 'get')
+    def test_user(self, mock_get):
+        """Test the resource property."""
+        event = Event().parse(EventTests.TEST_DATA)
+        event.user
+        mock_get.assert_called_once_with(onfido_id=event.onfido_id)
 
     def test_defaults(self):
         """Test default property values."""
         event = Event()
         # real data taken from check.json
         self.assertEqual(event.resource_type, '')
-        self.assertEqual(event.resource_id, '')
+        self.assertEqual(event.onfido_id, '')
         self.assertEqual(event.action, '')
         self.assertEqual(event.status, '')
-        self.assertEqual(event.completed_at, None)
+        self.assertEqual(event.created_at, None)
         self.assertEqual(event.raw, {})
 
     def test_save(self):
@@ -593,10 +600,10 @@ class EventTests(TestCase):
         event = Event().parse(data).save()
         # real data taken from check.json
         self.assertEqual(event.resource_type, data['payload']['resource_type'])
-        self.assertEqual(event.resource_id, data['payload']['object']['id'])
+        self.assertEqual(event.onfido_id, data['payload']['object']['id'])
         self.assertEqual(event.action, data['payload']['action'])
         self.assertEqual(event.status, data['payload']['object']['status'])
-        self.assertEqual(event.completed_at, date_parse(data['payload']['object']['completed_at']))
+        self.assertEqual(event.created_at, date_parse(data['payload']['object']['completed_at']))
         self.assertEqual(event.raw, data)
 
     def test_unicode_str_repr(self):
@@ -612,8 +619,8 @@ class EventTests(TestCase):
         event = Event().parse(data)
         # real data taken from check.json
         self.assertEqual(event.resource_type, data['payload']['resource_type'])
-        self.assertEqual(event.resource_id, data['payload']['object']['id'])
+        self.assertEqual(event.onfido_id, data['payload']['object']['id'])
         self.assertEqual(event.action, data['payload']['action'])
         self.assertEqual(event.status, data['payload']['object']['status'])
-        self.assertEqual(event.completed_at, date_parse(data['payload']['object']['completed_at']))
+        self.assertEqual(event.created_at, date_parse(data['payload']['object']['completed_at']))
         self.assertEqual(event.raw, data)

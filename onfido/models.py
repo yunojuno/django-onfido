@@ -21,6 +21,7 @@ class BaseModel(models.Model):
     """Base model used to set timestamps."""
 
     onfido_id = models.CharField(
+        'Onfido ID',
         unique=True,
         max_length=40,
         help_text=_("The id returned from the Onfido API."),
@@ -185,10 +186,10 @@ class BaseStatusModel(BaseModel):
         """
         # we're doing a lot of marshalling from JSON to python, so this assert
         # just ensures we do actually have a datetime at this point
-        assert isinstance(event.completed_at, datetime.datetime)
+        assert isinstance(event.created_at, datetime.datetime)
         # swap statuses around so we record old / new
         self.status, old_status = event.status, self.status
-        self.updated_at = event.completed_at
+        self.updated_at = event.created_at
         self.save()
         on_status_change.send(
             self.__class__,
@@ -372,17 +373,13 @@ class Report(BaseStatusModel):
         return self
 
 
-class Event(models.Model):
+class Event(BaseModel):
 
     """Used to record callback events received from the API."""
 
     resource_type = models.CharField(
         max_length=20,
         help_text=_("The resource_type returned from the API callback.")
-    )
-    resource_id = models.CharField(
-        max_length=40,
-        help_text=_("The Onfido id of the object that was updated, returned from the API."),
     )
     action = models.CharField(
         max_length=20,
@@ -392,23 +389,36 @@ class Event(models.Model):
         max_length=20,
         help_text=_("The status of the object after the event.")
     )
-    completed_at = models.DateTimeField(
-        help_text=_("The completed_at timestamp returned from the API callback.")
-    )
-    raw = JSONField(
-        help_text=_("The raw JSON returned from the API."),
-        blank=True, null=True
-    )
 
     def __unicode__(self):
         return "{} event occurred on {}.{}".format(
-            self.action, self.resource_type, self.resource_id
+            self.action, self.resource_type, self.onfido_id
         )
 
     def __repr__(self):
-        return u"<Event id={} action='{}' resource_id='{}.{}'>".format(
-            self.id, self.action, self.resource_type, self.resource_id
+        return u"<Event id={} action='{}' onfido_id='{}.{}'>".format(
+            self.id, self.action, self.resource_type, self.onfido_id
         )
+
+    def _resource_manager(self):
+        """Return the appropriate model manager for the resource_type."""
+        assert self.resource_type in ('check', 'report'), (
+            "Unknown resource type: {}".format(self.resource_type)
+        )
+        if self.resource_type == 'check':
+            return Check.objects
+        elif self.resource_type == 'report':
+            return Report.objects
+
+    @property
+    def resource(self):
+        """Return the underlying Check or Report resource."""
+        return self._resource_manager().get(onfido_id=self.onfido_id)
+
+    @property
+    def user(self):
+        """Return the user to whom the resource refers."""
+        return self.resource.user
 
     def save(self, *args, **kwargs):
         """Save object and return self (for chaining methods)."""
@@ -423,21 +433,7 @@ class Event(models.Model):
         self.resource_type = payload['resource_type']
         self.action = payload['action']
         obj = payload['object']
-        self.resource_id = obj['id']
+        self.onfido_id = obj['id']
         self.status = obj['status']
-        self.completed_at = date_parse(obj['completed_at'])
+        self.created_at = date_parse(obj['completed_at'])
         return self
-
-    def _resource_manager(self):
-        """Return the appropriate model manager for the resource_type."""
-        assert self.resource_type in ('check', 'report'), (
-            "Unknown resource type: {}".format(self.resource_type)
-        )
-        if self.resource_type == 'check':
-            return Check.objects
-        elif self.resource_type == 'report':
-            return Report.objects
-
-    def resource(self):
-        """Return the underlying Check or Report resource."""
-        return self._resource_manager().get(onfido_id=self.resource_id)
