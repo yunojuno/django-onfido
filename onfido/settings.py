@@ -13,11 +13,14 @@ API_KEY = (
     getattr(settings, 'ONFIDO_API_KEY', None)
 )
 
+# Webhook token - see https://documentation.onfido.com/#webhooks
+WEBHOOK_TOKEN = (
+    getenv('ONFIDO_WEBHOOK_TOKEN', None) or
+    getattr(settings, 'ONFIDO_WEBHOOK_TOKEN', None)
+)
+
 # Set to False to turn off event logging
 LOG_EVENTS = getattr(settings, 'ONFIDO_LOG_EVENTS', True)
-
-# Webhook token - see https://documentation.onfido.com/#webhooks
-WEBHOOK_TOKEN = getattr(settings, 'ONFIDO_WEBHOOK_TOKEN', None)
 
 # Set to True to bypass request verification (NOT RECOMMENDED)
 TEST_MODE = getattr(settings, 'ONFIDO_TEST_MODE', False)

@@ -104,12 +104,15 @@ The ``Report`` object is a special case, where the raw data from the API often c
 Settings
 --------
 
-The following settings can be specified in the Django settings module, or in environment settings.
+The following settings can be specified as environment settings or within the Django settings.
 
 * ``ONFIDO_API_KEY``: your API key, found under **setting** in your Onfido account.
+* ``ONFIDO_WEBHOOK_TOKEN``: (optional) the Onfido webhook callback token - required if using webhooks.
+
+The following settings can be specified in the Django settings:
+
 * ``ONFIDO_LOG_EVENTS``: (optional) if True then callback events from the API will also be recorded as ``Event`` objects. Defaults to False.
 * ``ONFIDO_REPORT_SCRUBBER``: (optional) a function that is used to scrub sensitive data from ``Report`` objects. The default implementation will remove **breakdown** and **properties**.
-* ``ONFIDO_WEBHOOK_TOKEN``: (optional) the Onfido webhook callback token - required if using webhooks.
 
 Tests
 -----

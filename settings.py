@@ -84,3 +84,6 @@ LOGGING = {
 }
 
 assert DEBUG is True, "This project is only intended to be used for testing."
+
+ONFIDO_WEBHOOK_TOKEN=getenv('ONFIDO_WEBHOOK_TOKEN')
+
