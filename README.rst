@@ -1,8 +1,3 @@
-Django-Onfido
-==============
-
-Django app for integration with the Onfido API (v2)
-
 .. image:: https://travis-ci.org/yunojuno/django-onfido.svg?branch=master
     :target: https://travis-ci.org/yunojuno/django-onfido
 
@@ -11,6 +6,11 @@ Django app for integration with the Onfido API (v2)
 
 .. image:: https://codecov.io/gh/yunojuno/django-onfido/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/yunojuno/django-onfido
+
+Django Onfido
+==============
+
+Django app for integration with the Onfido API (v2)
 
 Background
 ----------
