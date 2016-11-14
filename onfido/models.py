@@ -6,7 +6,7 @@ from dateutil.parser import parse as date_parse
 
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 
 from .api import get
 from .db.fields import JSONField
