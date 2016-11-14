@@ -1,11 +1,4 @@
-# requirements used by tox
-coverage==4.2
-mock==2.0.0
-python-dateutil==2.5.3
-requests==2.11.1
-simplejson==3.8.2
-tox==2.4.1
-wheel==0.24.0
-
-# install Django if you want to run the project locally
-# Django==1.8
+# core dependencies
+python-dateutil>=2.5
+requests>2.10
+simplejson>=3.8
