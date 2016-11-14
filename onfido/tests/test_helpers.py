@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import mock
+from copy import deepcopy
 
 from dateutil.parser import parse as date_parse
 
@@ -16,6 +17,17 @@ from ..helpers import (
 )
 
 
+CREATE_APPLICANT_RETURN = {
+    "id": "a9acefdf-3dc5-4973-aa78-20bd36825b50",
+    "created_at": "2016-10-18T16:02:04Z",
+    "title": "Mr",
+    "first_name": "Fred",
+    "last_name": "Flintstone",
+    "email": "fred@flintstone.com",
+    "country": "GBR",
+}
+
+
 class HelperTests(TestCase):
 
     """onfido.helper module tests."""
@@ -23,15 +35,7 @@ class HelperTests(TestCase):
     @mock.patch('onfido.helpers.post')
     def test_create_applicant(self, mock_post):
         """Test the create_applicant function."""
-        data = {
-            "id": "a9acefdf-3dc5-4973-aa78-20bd36825b50",
-            "created_at": "2016-10-18T16:02:04Z",
-            "title": "Mr",
-            "first_name": "Fred",
-            "last_name": "Flintstone",
-            "email": "fred@flintstone.com",
-            "country": "gbr",
-        }
+        data = deepcopy(CREATE_APPLICANT_RETURN)
         mock_post.return_value = data
         user = User.objects.create_user(
             username='fred',
@@ -40,22 +44,51 @@ class HelperTests(TestCase):
             email='fred@flintstone.com'
         )
         applicant = create_applicant(user)
+        mock_post.assert_called_once_with(
+            'applicants',
+            {
+                'first_name': 'Fred',
+                'last_name': 'Flintstone',
+                'email': 'fred@flintstone.com',
+            }
+        )
         self.assertEqual(applicant.onfido_id, data['id'])
         self.assertEqual(applicant.user, user)
         self.assertEqual(applicant.created_at, date_parse(data['created_at']))
 
     @mock.patch('onfido.helpers.post')
+    def test_create_applicant_with_custom_data(self, mock_post):
+        """Test the create_applicant function with extra custom POST data."""
+        data = deepcopy(CREATE_APPLICANT_RETURN)
+        mock_post.return_value = data
+        user = User.objects.create_user(
+            username='fred',
+            first_name='Fred',
+            last_name='Flintstone',
+            email='fred@flintstone.com'
+        )
+        create_applicant(
+            user,
+            country='GBR',
+            dob='2016-01-01',
+            gender='male'
+        )
+        mock_post.assert_called_once_with(
+            'applicants',
+            {
+                'first_name': 'Fred',
+                'last_name': 'Flintstone',
+                'email': 'fred@flintstone.com',
+                'gender': 'male',
+                'dob': '2016-01-01',
+                'country': 'GBR',
+            }
+        )
+
+    @mock.patch('onfido.helpers.post')
     def test_create_check(self, mock_post):
         """Test the create_check function."""
-        applicant_data = {
-            "id": "a9acefdf-3dc5-4973-aa78-20bd36825b50",
-            "created_at": "2016-10-18T16:02:04Z",
-            "title": "Mr",
-            "first_name": "Fred",
-            "last_name": "Flintstone",
-            "email": "fred@flintstone.com",
-            "country": "gbr",
-        }
+        applicant_data = deepcopy(CREATE_APPLICANT_RETURN)
         check_data = {
             "id": "b2b75f66-fffd-45a4-ba15-b1e77a672a9a",
             "created_at": "2016-10-18T16:02:08Z",
