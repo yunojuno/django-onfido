@@ -8,13 +8,23 @@ from .models import (
 )
 
 
-def create_applicant(user):
-    """Create an applicant in the Onfido system."""
+def create_applicant(user, **kwargs):
+    """Create an applicant in the Onfido system.
+
+    Args:
+        user: an auth.User instance to register as an applicant.
+    Kwargs:
+       any kwargs passed in are merged into the data dict sent to the API. This
+       enables support for additional applicant properties - e.g dob, gender,
+       country, and any others that may change over time.
+       See https://documentation.onfido.com/#create-applicant for details.
+    """
     data = {
         "first_name": user.first_name,
         "last_name": user.last_name,
         "email": user.email
     }
+    data.update(kwargs)
     response = post('applicants', data)
     return Applicant.objects.create_applicant(user, response)
 
