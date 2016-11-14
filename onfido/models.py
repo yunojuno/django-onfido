@@ -186,10 +186,10 @@ class BaseStatusModel(BaseModel):
         """
         # we're doing a lot of marshalling from JSON to python, so this assert
         # just ensures we do actually have a datetime at this point
-        assert isinstance(event.created_at, datetime.datetime)
+        assert isinstance(event.completed_at, datetime.datetime)
         # swap statuses around so we record old / new
         self.status, old_status = event.status, self.status
-        self.updated_at = event.created_at
+        self.updated_at = event.completed_at
         self.save()
         on_status_change.send(
             self.__class__,
@@ -373,10 +373,15 @@ class Report(BaseStatusModel):
         return self
 
 
-class Event(BaseModel):
+class Event(models.Model):
 
     """Used to record callback events received from the API."""
 
+    onfido_id = models.CharField(
+        'Onfido ID',
+        max_length=40,
+        help_text=_("The Onfido ID of the related resource."),
+    )
     resource_type = models.CharField(
         max_length=20,
         help_text=_("The resource_type returned from the API callback.")
@@ -388,6 +393,14 @@ class Event(BaseModel):
     status = models.CharField(
         max_length=20,
         help_text=_("The status of the object after the event.")
+    )
+    completed_at = models.DateTimeField(
+        help_text=_("The timestamp returned from the Onfido API."),
+        blank=True, null=True
+    )
+    raw = JSONField(
+        help_text=_("The raw JSON returned from the API."),
+        blank=True, null=True
     )
 
     def __unicode__(self):
@@ -435,5 +448,5 @@ class Event(BaseModel):
         obj = payload['object']
         self.onfido_id = obj['id']
         self.status = obj['status']
-        self.created_at = date_parse(obj['completed_at'])
+        self.completed_at = date_parse(obj['completed_at'])
         return self

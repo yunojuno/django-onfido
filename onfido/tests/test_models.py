@@ -207,12 +207,12 @@ class BaseStatusModelTests(TestCase):
             status='after',
             onfido_id='foo',
             resource_type='check',
-            created_at=None
+            completed_at=None
         )
         # try passing in something that is not a datetime
         self.assertRaises(AssertionError, obj.update_status, event)
 
-        event.created_at = now
+        event.completed_at = now
         obj = obj.update_status(event)
         self.assertEqual(obj.status, event.status)
         self.assertEqual(obj.updated_at, now)
@@ -591,7 +591,7 @@ class EventTests(TestCase):
         self.assertEqual(event.onfido_id, '')
         self.assertEqual(event.action, '')
         self.assertEqual(event.status, '')
-        self.assertEqual(event.created_at, None)
+        self.assertEqual(event.completed_at, None)
         self.assertEqual(event.raw, {})
 
     def test_save(self):
@@ -603,7 +603,7 @@ class EventTests(TestCase):
         self.assertEqual(event.onfido_id, data['payload']['object']['id'])
         self.assertEqual(event.action, data['payload']['action'])
         self.assertEqual(event.status, data['payload']['object']['status'])
-        self.assertEqual(event.created_at, date_parse(data['payload']['object']['completed_at']))
+        self.assertEqual(event.completed_at, date_parse(data['payload']['object']['completed_at']))
         self.assertEqual(event.raw, data)
 
     def test_unicode_str_repr(self):
@@ -622,5 +622,5 @@ class EventTests(TestCase):
         self.assertEqual(event.onfido_id, data['payload']['object']['id'])
         self.assertEqual(event.action, data['payload']['action'])
         self.assertEqual(event.status, data['payload']['object']['status'])
-        self.assertEqual(event.created_at, date_parse(data['payload']['object']['completed_at']))
+        self.assertEqual(event.completed_at, date_parse(data['payload']['object']['completed_at']))
         self.assertEqual(event.raw, data)

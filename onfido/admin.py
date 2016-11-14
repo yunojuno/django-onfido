@@ -144,15 +144,15 @@ class EventAdmin(RawMixin, UserMixin, admin.ModelAdmin):
     """Admin model for Event objects."""
 
     list_display = (
-        'onfido_id',  'resource_type', '_user', 'action',
-        'status', 'created_at'
+        'onfido_id', 'resource_type', '_user', 'action',
+        'status', 'completed_at'
     )
     list_filter = (
-        'action', 'resource_type', 'status', 'created_at'
+        'action', 'resource_type', 'status', 'completed_at'
     )
     readonly_fields = (
         'onfido_id', 'resource_type', 'action',
-        'status', 'created_at', '_raw'
+        'status', 'completed_at', '_raw'
     )
     search_fields = ('resource_id',)
     exclude = ('raw',)
