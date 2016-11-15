@@ -194,28 +194,43 @@ class BaseStatusModelTests(TestCase):
 
     @mock.patch('onfido.signals.on_status_change.send')
     @mock.patch('onfido.signals.on_completion.send')
+    @mock.patch.object(BaseStatusModel, 'pull')
     @mock.patch.object(BaseStatusModel, 'save')
-    def test_update_status(self, mock_save, mock_complete, mock_update):
+    def test_update_status(self, mock_save, mock_pull, mock_complete, mock_update):
         """Test the update_status method."""
-        obj = TestBaseStatusModel(status='before')
         now = datetime.datetime.now()
-        self.assertEqual(obj.status, 'before')
-        self.assertEqual(obj.updated_at, None)
 
-        event = Event(
-            action='form.opened',
-            status='after',
-            onfido_id='foo',
-            resource_type='check',
-            completed_at=None
-        )
+        def reset():
+            mock_save.reset_mock()
+            mock_pull.reset_mock()
+            mock_complete.reset_mock()
+            mock_update.reset_mock()
+            event = Event(
+                action='form.opened',
+                status='after',
+                onfido_id='foo',
+                resource_type='check',
+                completed_at=now
+            )
+            obj = TestBaseStatusModel(
+                status='before'
+            )
+            assert obj.status == 'before'
+            assert obj.updated_at is None
+            return event, obj
+
         # try passing in something that is not a datetime
+        event, obj = reset()
+        event.completed_at = None
         self.assertRaises(AssertionError, obj.update_status, event)
 
+        event, obj = reset()
         event.completed_at = now
         obj = obj.update_status(event)
         self.assertEqual(obj.status, event.status)
         self.assertEqual(obj.updated_at, now)
+        mock_pull.assert_called_once_with()
+        mock_save.assert_not_called()
         mock_update.assert_called_once_with(
             TestBaseStatusModel,
             instance=obj,
@@ -225,24 +240,42 @@ class BaseStatusModelTests(TestCase):
         )
         mock_complete.assert_not_called()
 
-        # if we send 'complete' as the status we should fire
-        # the second signal
+        # if we send 'complete' as the status we should fire the second signal
+        event, obj = reset()
         event.status = 'complete'
-        mock_update.reset_mock()
         obj = obj.update_status(event)
-        self.assertEqual(obj.status, 'complete')
+        self.assertEqual(obj.status, event.status)
         self.assertEqual(obj.updated_at, now)
+        mock_pull.assert_called_once_with()
+        mock_save.assert_not_called()
         mock_update.assert_called_once_with(
             TestBaseStatusModel,
             instance=obj,
             event=event.action,
-            status_before='after',
-            status_after='complete'
+            status_before='before',
+            status_after=event.status
         )
         mock_complete.assert_called_once_with(
             TestBaseStatusModel,
             instance=obj
         )
+
+        # test that we can handle the API failing on pull()
+        event, obj = reset()
+        mock_pull.side_effect = Exception("Something went wrong in the API")
+        obj = obj.update_status(event)
+        self.assertEqual(obj.status, event.status)
+        self.assertEqual(obj.updated_at, now)
+        mock_pull.assert_called_once_with()
+        mock_save.assert_called_once_with()
+        mock_update.assert_called_once_with(
+            TestBaseStatusModel,
+            instance=obj,
+            event=event.action,
+            status_before='before',
+            status_after=event.status
+        )
+        mock_complete.assert_not_called()
 
 
 class ApplicantManagerTests(TestCase):
