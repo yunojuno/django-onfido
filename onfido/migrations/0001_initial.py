@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import onfido.db.fields
 from django.conf import settings
 
 
@@ -19,7 +18,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('onfido_id', models.CharField(help_text='The id returned from the Onfido API.', unique=True, max_length=40)),
                 ('created_at', models.DateTimeField(help_text='The timestamp returned from the Onfido API.', null=True, blank=True)),
-                ('raw', onfido.db.fields.JSONField(default=b'{}', help_text='The raw JSON returned from the API.', null=True, blank=True)),
+                ('raw', models.TextField(default=b'{}', help_text='The raw JSON returned from the API.', null=True, blank=True)),
                 ('user', models.OneToOneField(related_name='onfido_applicant', to=settings.AUTH_USER_MODEL, help_text='Django user that maps to this applicant.')),
             ],
             options={
@@ -32,7 +31,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('onfido_id', models.CharField(help_text='The id returned from the Onfido API.', unique=True, max_length=40)),
                 ('created_at', models.DateTimeField(help_text='The timestamp returned from the Onfido API.', null=True, blank=True)),
-                ('raw', onfido.db.fields.JSONField(default=b'{}', help_text='The raw JSON returned from the API.', null=True, blank=True)),
+                ('raw', models.TextField(default=b'{}', help_text='The raw JSON returned from the API.', null=True, blank=True)),
                 ('status', models.CharField(blank=True, max_length=20, null=True, help_text='The current state of the check / report (from API).', choices=[(b'Check', ((b'in_progress', b'In progress'), (b'awaiting_applicant', b'Awaiting applicant'), (b'complete', b'Complete'), (b'withdrawn', b'Withdrawn'), (b'paused', b'Paused'), (b'reopened', b'Reopened'))), (b'Report', ((b'awaiting_data', b'Awaiting data'), (b'awaiting_approval', b'Awaiting approval'), (b'complete', b'Complete'), (b'withdrawn', b'Withdrawn'), (b'paused', b'Paused'), (b'cancelled', b'Cancelled')))])),
                 ('result', models.CharField(blank=True, max_length=20, null=True, help_text='The final result of the check / reports (from API).', choices=[(b'Check', ((b'clear', b'Clear'), (b'consider', b'Consider'))), (b'Report', ((b'clear', b'Clear'), (b'consider', b'Consider'), (b'unidentified', b'Unidentified')))])),
                 ('updated_at', models.DateTimeField(help_text='The timestamp of the most recent status change (from API).', null=True, blank=True)),
@@ -50,7 +49,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('onfido_id', models.CharField(help_text='The id returned from the Onfido API.', unique=True, max_length=40)),
                 ('created_at', models.DateTimeField(help_text='The timestamp returned from the Onfido API.', null=True, blank=True)),
-                ('raw', onfido.db.fields.JSONField(default=b'{}', help_text='The raw JSON returned from the API.', null=True, blank=True)),
+                ('raw', models.TextField(default=b'{}', help_text='The raw JSON returned from the API.', null=True, blank=True)),
                 ('status', models.CharField(blank=True, max_length=20, null=True, help_text='The current state of the check / report (from API).', choices=[(b'Check', ((b'in_progress', b'In progress'), (b'awaiting_applicant', b'Awaiting applicant'), (b'complete', b'Complete'), (b'withdrawn', b'Withdrawn'), (b'paused', b'Paused'), (b'reopened', b'Reopened'))), (b'Report', ((b'awaiting_data', b'Awaiting data'), (b'awaiting_approval', b'Awaiting approval'), (b'complete', b'Complete'), (b'withdrawn', b'Withdrawn'), (b'paused', b'Paused'), (b'cancelled', b'Cancelled')))])),
                 ('result', models.CharField(blank=True, max_length=20, null=True, help_text='The final result of the check / reports (from API).', choices=[(b'Check', ((b'clear', b'Clear'), (b'consider', b'Consider'))), (b'Report', ((b'clear', b'Clear'), (b'consider', b'Consider'), (b'unidentified', b'Unidentified')))])),
                 ('updated_at', models.DateTimeField(help_text='The timestamp of the most recent status change (from API).', null=True, blank=True)),
