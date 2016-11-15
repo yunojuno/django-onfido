@@ -13,6 +13,31 @@ from .models import (
 )
 
 
+class ResultMixin(object):
+
+    """Adds custom action for overriding is_clear."""
+
+    def mark_as_clear(self, request, queryset):
+        """Call mark_as_clear on all objects in the queryset."""
+        for obj in queryset:
+            obj.mark_as_clear(request.user)
+
+    mark_as_clear.short_description = _("Mark selected items as clear")
+
+
+class EventsMixin(object):
+
+    """Pretty print Events relating to an object."""
+
+    def _events(self, obj):
+        """Pretty print object events."""
+        events = obj.events()
+        html = ''.join(['<li>{}: {}</li>'.format(e.completed_at.date(), e.action) for e in events])
+        return mark_safe("<ul>{}</ul>".format(html))
+
+    _events.short_description = _("Related events")
+
+
 class RawMixin(object):
 
     """Admin mixin used to pprint raw JSON fields."""
@@ -79,17 +104,17 @@ class ApplicantAdmin(RawMixin, UserMixin, admin.ModelAdmin):
 admin.site.register(Applicant, ApplicantAdmin)
 
 
-class CheckAdmin(RawMixin, UserMixin, admin.ModelAdmin):
+class CheckAdmin(ResultMixin, EventsMixin, RawMixin, UserMixin, admin.ModelAdmin):
 
     """Admin model for Check objects."""
 
     list_display = (
         'onfido_id', '_user', 'check_type', 'status',
-        'result', 'created_at', 'updated_at'
+        'result', 'created_at', 'updated_at', 'is_clear'
     )
     readonly_fields = (
         'onfido_id', 'user', 'created_at', 'applicant', 'check_type',
-        'status', 'result', 'updated_at', '_raw'
+        'status', 'result', 'updated_at', '_raw', '_events'
     )
     search_fields = (
         'onfido_id', 'user__first_name', 'user__last_name'
@@ -105,17 +130,18 @@ class CheckAdmin(RawMixin, UserMixin, admin.ModelAdmin):
         'applicant', 'user'
     )
     exclude = ('raw',)
+    actions = ('mark_as_clear',)
 
 admin.site.register(Check, CheckAdmin)
 
 
-class ReportAdmin(RawMixin, UserMixin, admin.ModelAdmin):
+class ReportAdmin(ResultMixin, EventsMixin, RawMixin, UserMixin, admin.ModelAdmin):
 
     """Admin model for Report objects."""
 
     list_display = (
         'onfido_id', '_user', 'report_type',
-        'status', 'result', 'created_at', 'updated_at'
+        'status', 'result', 'created_at', 'updated_at', 'is_clear'
     )
     ordering = (
         'user__first_name', 'user__last_name'
@@ -135,6 +161,7 @@ class ReportAdmin(RawMixin, UserMixin, admin.ModelAdmin):
         'onfido_check', 'user'
     )
     exclude = ('raw',)
+    actions = ('mark_as_clear',)
 
 admin.site.register(Report, ReportAdmin)
 
