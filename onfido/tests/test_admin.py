@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 from decimal import Decimal
 import mock
 
@@ -6,10 +7,53 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from ..admin import (
+    Applicant,
+    Check,
+    Event,
+    EventsMixin,
     RawMixin,
+    ResultMixin,
     UserMixin,
-    Applicant
 )
+
+
+class ResultMixinTests(TestCase):
+
+    """onfido.admin.ResultMixin tests."""
+
+    @mock.patch.object(Check, 'mark_as_clear')
+    def test__events(self, mock_clear):
+
+        def request():
+            request = mock.Mock()
+            request.user = User()
+            return request
+
+        check = Check()
+        request = request()
+        mixin = ResultMixin()
+        mixin.mark_as_clear(request, [check])
+        mock_clear.assert_called_once_with(request.user)
+
+
+class EventsMixinTests(TestCase):
+
+    """onfido.admin.EventsMixin tests."""
+
+    @mock.patch.object(Check, 'events')
+    def test__events(self, mock_events):
+        event = Event(
+            onfido_id='foo',
+            action='test.action',
+            resource_type='bar',
+            status='in_progress',
+            completed_at=datetime.datetime.now().isoformat()
+        ).save()
+        mock_events.return_value = [event]
+        mixin = EventsMixin()
+        check = Check()
+        html = mixin._events(check)
+        self.assertEqual(html, '<ul><li>2016-11-15: test.action</li></ul>')
 
 
 class RawMixinTests(TestCase):

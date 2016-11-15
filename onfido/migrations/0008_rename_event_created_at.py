@@ -7,14 +7,14 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('onfido', '0008_auto_20161028_0815'),
+        ('onfido', '0007_rename_onfido_id_verbose_name'),
     ]
 
     operations = [
         migrations.AlterField(
             model_name='event',
-            name='onfido_id',
-            field=models.CharField(help_text='The Onfido ID of the related resource.', max_length=40, verbose_name=b'Onfido ID'),
+            name='created_at',
+            field=models.DateTimeField(help_text='The timestamp returned from the Onfido API.', null=True, blank=True),
         ),
         migrations.RenameField(
             model_name='event',
