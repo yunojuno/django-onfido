@@ -5,7 +5,7 @@ import mock
 from dateutil.parser import parse as date_parse
 
 from django.contrib.auth.models import User
-from django.db.models import Model
+from django.db.models import Model, query
 from django.test import TestCase
 from django.utils.timezone import now as tz_now
 
@@ -276,6 +276,58 @@ class BaseStatusModelTests(TestCase):
             status_after=event.status
         )
         mock_complete.assert_not_called()
+
+    @mock.patch('onfido.models.tz_now')
+    def test__override_event(self, mock_now):
+        """Test the _override_event method."""
+        now = datetime.datetime.now()
+        mock_now.return_value = now
+        data = {
+            "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
+            "created_at": "2016-10-15T19:05:50Z",
+            "status": "awaiting_applicant",
+            "type": "standard",
+            "result": "clear",
+            "href": "http://foo"
+        }
+        user = User()
+        obj = TestBaseStatusModel().parse(data)
+        event = obj._override_event(user)
+        self.assertEqual(event.onfido_id, obj.onfido_id)
+        self.assertEqual(event.action, "manual.override")
+        self.assertEqual(event.resource_type, TestBaseStatusModel._meta.model_name)
+        self.assertEqual(event.status, obj.status)
+        self.assertEqual(event.completed_at, now)
+
+    @mock.patch.object(Event, 'save')
+    @mock.patch.object(BaseStatusModel, 'save')
+    def test_mark_as_clear(self, mock_save, mock_event_save):
+        """Test the mark_as_clear method."""
+        data = {
+            "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
+            "created_at": "2016-10-15T19:05:50Z",
+            "status": "awaiting_applicant",
+            "type": "standard",
+            "result": None,
+            "href": "http://foo"
+        }
+        user = User()
+        obj = Check().parse(data)
+        self.assertIsNone(obj.is_clear)
+        obj = obj.mark_as_clear(user)
+        mock_save.assert_called_once_with()
+        mock_event_save.assert_called_once_with()
+        self.assertTrue(obj.is_clear)
+
+    @mock.patch.object(query.QuerySet, 'filter')
+    def test_events(self, mock_filter):
+        """Test the events method."""
+        obj = TestBaseStatusModel(onfido_id='foo')
+        obj.events()
+        mock_filter.assert_called_once_with(
+            onfido_id='foo',
+            resource_type='testbasestatusmodel'
+        )
 
 
 class ApplicantManagerTests(TestCase):

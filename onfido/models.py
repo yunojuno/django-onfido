@@ -7,6 +7,7 @@ from dateutil.parser import parse as date_parse
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django.utils.timezone import now as tz_now
 
 from .api import get
 from .db.fields import JSONField
@@ -155,9 +156,50 @@ class BaseStatusModel(BaseModel):
         blank=True, null=True,
         help_text=_("The timestamp of the most recent status change (from API).")
     )
+    is_clear = models.NullBooleanField(
+        default=None,
+        help_text=_("True if the check / report is 'clear' (via API or manual override).")
+    )
 
     class Meta:
         abstract = True
+
+    def events(self):
+        """Return queryset of Events related to this object."""
+        return Event.objects.filter(onfido_id=self.onfido_id, resource_type=self._meta.model_name)
+
+    def _override_event(self, user):
+        """
+        Create a fake override event for the object.
+
+        This method uses the current object to create a fake Event payload,
+        which is then parsed into an Event object, used to fake result
+        transitions.
+
+        NB the Event object isn't saved in this method.
+
+        Args:
+            user: User object, the person who is making the fake transition (
+                used for auditing purposes).
+
+        Returns a new (unsaved) Event that can be used to audit a fake transition.
+
+        """
+        payload = {
+            "payload": {
+                "action": "manual.override",
+                "object": {
+                    "completed_at": tz_now().isoformat(),
+                    "href": self.href,
+                    "id": self.onfido_id,
+                    "status": self.status
+                },
+                "resource_type": self._meta.model_name,
+                "user_id": user.id
+            }
+
+        }
+        return Event().parse(payload)
 
     def update_status(self, event):
         """
@@ -210,6 +252,36 @@ class BaseStatusModel(BaseModel):
         super(BaseStatusModel, self).parse(raw_json)
         self.result = self.raw['result']
         self.status = self.raw['status']
+        if self.result == 'clear':
+            self.is_clear = True
+        return self
+
+    def mark_as_clear(self, user):
+        """
+        Override the result field manually.
+
+        When a Check / Report comes back as 'consider', and we need to get to
+        some kind of answer ourselves (outside of Onfido). If we decided (offline)
+        that the applicant is OK (e.g. their passport photo may be poor quality,
+        so Onfido return 'consider', but we then take a view that it's correct)
+        we need to mark them as cleared, so that they have the approval state.
+
+        The important thing here is that we correctly audit the change - we don't
+        just overwrite the result field, but we log the change, so that it can
+        be seen. In order to do this we piggy-back on the event update process,
+        and use a fake event (one that we create, not Onfido) to update the
+        result.
+
+        Args:
+            user: User object, the person who is doing the overriding - this
+                will typically be an admin user, doing it from the admin site.
+
+        Returns the object itself, updated and saved.
+
+        """
+        self._override_event(user).save()
+        self.is_clear = True
+        self.save()
         return self
 
 
@@ -405,6 +477,9 @@ class Event(models.Model):
         help_text=_("The raw JSON returned from the API."),
         blank=True, null=True
     )
+
+    class Meta:
+        ordering = ['completed_at']
 
     def __unicode__(self):
         return "{} event occurred on {}.{}".format(
