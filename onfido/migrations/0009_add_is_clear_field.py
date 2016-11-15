@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('onfido', '0009_auto_20161114_1933'),
+        ('onfido', '0008_rename_event_created_at'),
     ]
 
     operations = [
