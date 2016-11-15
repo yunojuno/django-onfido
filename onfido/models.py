@@ -38,9 +38,6 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
-    def __str__(self):
-        return unicode(self).encode('utf8')
-
     @property
     def href(self):
         """Return the href from the raw JSON field."""
@@ -190,7 +187,13 @@ class BaseStatusModel(BaseModel):
         # swap statuses around so we record old / new
         self.status, old_status = event.status, self.status
         self.updated_at = event.completed_at
-        self.save()
+        try:
+            self.pull()
+        except:
+            # even if we can't get latest, we should save the changes we
+            # have already made to the object
+            logger.warn(u"Unable to pull latest from Onfido: '%r'", self)
+            self.save()
         on_status_change.send(
             self.__class__,
             instance=self,
