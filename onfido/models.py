@@ -5,12 +5,12 @@ import logging
 from dateutil.parser import parse as date_parse
 
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import now as tz_now
 
 from .api import get
-from .db.fields import JSONField
 from .settings import scrub_report_data
 from .signals import on_status_change, on_completion
 

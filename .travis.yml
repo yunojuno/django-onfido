@@ -1,3 +1,12 @@
+dist:
+    trusty
+
+sudo:
+    required
+
+addons:
+    postgresql: "9.5"
+
 language:
     python
 
@@ -10,3 +19,15 @@ install:
 script:
     tox
     codecov
+
+services:
+    postgresql
+
+addons:
+    postgresql: "9.5"
+
+env:
+    TEST_DB_HOST: "localhost"
+    TEST_DB_NAME: "test"
+    TEST_DB_USER: "postgres"
+    TEST_DB_PASSWORD: ""

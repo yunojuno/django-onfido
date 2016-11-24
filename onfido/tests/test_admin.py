@@ -5,6 +5,7 @@ import mock
 
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.utils import timezone
 
 from ..admin import (
     Applicant,
@@ -42,18 +43,19 @@ class EventsMixinTests(TestCase):
 
     @mock.patch.object(Check, 'events')
     def test__events(self, mock_events):
+        now = timezone.now()
         event = Event(
             onfido_id='foo',
             action='test.action',
             resource_type='bar',
             status='in_progress',
-            completed_at=datetime.datetime.now().isoformat()
+            completed_at=now.isoformat()
         ).save()
         mock_events.return_value = [event]
         mixin = EventsMixin()
         check = Check()
         html = mixin._events(check)
-        self.assertEqual(html, '<ul><li>2016-11-15: test.action</li></ul>')
+        self.assertEqual(html, '<ul><li>{}: test.action</li></ul>'.format(now.date().isoformat()))
 
 
 class RawMixinTests(TestCase):

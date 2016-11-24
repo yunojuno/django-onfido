@@ -12,7 +12,6 @@ from django.utils.timezone import now as tz_now
 from ..api import ApiError
 from ..models import (
     BaseModel,
-    BaseQuerySet,
     BaseStatusModel,
     Applicant,
     Check,
@@ -43,7 +42,7 @@ class BaseModelTests(TestCase):
         self.assertEqual(obj.id, None)
         self.assertEqual(obj.onfido_id, '')
         self.assertEqual(obj.created_at, None)
-        self.assertEqual(obj.raw, {})
+        self.assertEqual(obj.raw, None)
 
     @mock.patch.object(BaseModel, 'full_clean')
     @mock.patch.object(Model, 'save')
@@ -171,11 +170,10 @@ class BaseStatusModelTests(TestCase):
         self.assertEqual(obj.id, None)
         self.assertEqual(obj.onfido_id, '')
         self.assertEqual(obj.created_at, None)
-        self.assertEqual(obj.raw, {})
         self.assertEqual(obj.status, None)
         self.assertEqual(obj.result, None)
         self.assertEqual(obj.updated_at, None)
-        self.assertEqual(obj.raw, {})
+        self.assertEqual(obj.raw, None)
 
     def test_parse(self):
         """Test the parse method."""
@@ -340,11 +338,11 @@ class ApplicantManagerTests(TestCase):
     }
 
     def setUp(self):
-        self.user = User(id=1, first_name=u"œ∑´®†¥")
+        self.user = User.objects.create_user('fred', first_name=u"œ∑´®†¥")
         self.applicant = Applicant(onfido_id='foo', user=self.user)
 
-    @mock.patch.object(BaseModel, 'full_clean')
-    def test_create_applicant(self, mock_clean):
+    # @mock.patch.object(BaseModel, 'full_clean')
+    def test_create_applicant(self):
         """Test the create method parses response."""
         data = ApplicantManagerTests.TEST_DATA
         applicant = Applicant.objects.create_applicant(user=self.user, raw=data)
@@ -677,7 +675,7 @@ class EventTests(TestCase):
         self.assertEqual(event.action, '')
         self.assertEqual(event.status, '')
         self.assertEqual(event.completed_at, None)
-        self.assertEqual(event.raw, {})
+        self.assertEqual(event.raw, None)
 
     def test_save(self):
         """Test save method."""
