@@ -181,7 +181,7 @@ class EventAdmin(RawMixin, UserMixin, admin.ModelAdmin):
         'onfido_id', 'resource_type', 'action',
         'status', 'completed_at', '_raw'
     )
-    search_fields = ('resource_id',)
+    search_fields = ('onfido_id',)
     exclude = ('raw',)
 
 admin.site.register(Event, EventAdmin)
