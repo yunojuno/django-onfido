@@ -146,6 +146,11 @@ class BaseQuerySetTests(TestCase):
         Applicant.objects.all().fetch()
         self.assertEqual(mock_fetch.call_count, 2)
 
+        # check that an error doesn't blow up everything
+        mock_fetch.side_effect = Exception("Something went wrong")
+        Applicant.objects.all().fetch()
+        self.assertEqual(mock_fetch.call_count, 4)
+
     @mock.patch.object(BaseModel, 'pull')
     def test_pull(self, mock_pull):
         """Test the queryset calls fetch on all objects."""

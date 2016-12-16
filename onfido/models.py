@@ -94,7 +94,10 @@ class BaseQuerySet(models.QuerySet):
     def fetch(self):
         """Call fetch method on all objects in the queryset."""
         for obj in self:
-            obj.fetch()
+            try:
+                obj.fetch()
+            except:
+                logger.exception("Failed to fetch Onfido object: %r", obj)
 
     def pull(self):
         """Call pull method on all objects in the queryset."""
