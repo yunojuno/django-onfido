@@ -144,6 +144,7 @@ class BaseStatusModel(BaseModel):
         max_length=20,
         help_text=_("The current state of the check / report (from API)."),
         choices=STATUS_CHOICES,
+        db_index=True,
         blank=True, null=True
     )
     result = models.CharField(
