@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('onfido', '0010_convert_raw_fields_to_jsonb'),
+        ('onfido', '0009_add_is_clear_field'),
     ]
 
     operations = [
