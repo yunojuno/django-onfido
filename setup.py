@@ -11,11 +11,12 @@ chdir(path.normpath(path.join(path.abspath(__file__), pardir)))
 
 setup(
     name="django-onfido",
-    version="0.9.4",
+    version="0.9.5-dev",
     packages=find_packages(),
     install_requires=REQUIREMENTS,
     include_package_data=True,
     description='Django app for integration with Onfido.',
+    license='MIT',
     long_description=README,
     url='https://github.com/yunojuno/django-onfido',
     author='Hugo Rodger-Brown',
