@@ -15,9 +15,16 @@ Django app for integration with the Onfido API (v2)
 Background
 ----------
 
-Onfido is an online identity verification service. It provides API access to a range of tests (identity, right to work, criminal history, credit report). It is assumed that you are only interested in this project because you are already aware of what Onfido does, and so I won't repeat it here. If you want to find out more, head over to their website.
+Onfido is an online identity verification service. It provides API access to a
+range of tests (identity, right to work, criminal history, credit report). It
+is assumed that you are only interested in this project because you are
+already aware of what Onfido does, and so I won't repeat it here. If you want
+to find out more, head over to their website.
 
-If you *are* using Onfido, and you are using Django, then this project can be used to manage Onfido checks against your existing Django users. It handles the API interactions, as well as providing the callback webhooks required to support live status updates.
+If you *are* using Onfido, and you are using Django, then this project can be
+used to manage Onfido checks against your existing Django users. It handles
+the API interactions, as well as providing the callback webhooks required to
+support live status updates.
 
 Installation
 ------------
@@ -75,16 +82,22 @@ NB If you are using the callback functionality, you **must** set the ``ONFIDO_WE
 property (see settings section below). The callback handler will force verification of the
 X-Signature request header as specified in the `webhooks documentation <https://documentation.onfido.com/#webhooks>`_.
 
-The raw JSON
-returned from the API for a given entity (``Applicant``, ``Check``, ``Report``) is stored on
-the model as the ``raw`` attribute, and this can be parsed into the relevant model
-attributes. (Yes this does mean duplication of data.) The core pattern for interaction with the API on a per-object basis is a read-only
-fetch / pull pattern (analagous to git operations of the same name). If you call the ``fetch`` method
-on an object, it will use the ``href`` value in the raw JSON to fetch the latest
-data from the API and parse it, but without saving the changes. If you want
-to update the object, use the ``pull`` method instead.
+The raw JSON returned from the API for a given entity (``Applicant``,
+``Check``, ``Report``) is stored on the model as the ``raw`` attribute, and
+this can be parsed into the relevant model attributes. (Yes this does mean
+duplication of data.) The core pattern for interaction with the API on a per-
+object basis is a read-only fetch / pull pattern (analagous to git operations
+of the same name). If you call the ``fetch`` method on an object, it will use
+the ``href`` value in the raw JSON to fetch the latest data from the API and
+parse it, but without saving the changes. If you want to update the object,
+use the ``pull`` method instead.
 
-The ``Report`` object is a special case, where the raw data from the API often contains sensitive information that you may not wish to store locally (passport numbers, Visa information, personal data). In order to get around this, there is a ``scrub_report_data`` function that will remove certain attributes of the raw data before it is parsed. By default this will remove the ``breakdown`` and ``properties`` elements.
+The ``Report`` object is a special case, where the raw data from the API often
+contains sensitive information that you may not wish to store locally
+(passport numbers, Visa information, personal data). In order to get around
+this, there is a ``scrub_report_data`` function that will remove certain
+attributes of the raw data before it is parsed. By default this will remove
+the ``breakdown`` and ``properties`` elements.
 
 .. code:: python
 
@@ -100,6 +113,20 @@ The ``Report`` object is a special case, where the raw data from the API often c
     }
     >>> check.fetch()  # fetch and parse the latest raw data
     >>> check.pull()  # calls fetch and then saves the object
+
+There is a management command ``onfido_sync`` which can be used to ``pull`` all the objects
+in a queryset. It takes a single positional arg - 'applicant', check' or 'report', and has two
+options - ``--filter`` and ``--exclude`` - both of which take multiple space-separated
+args which can be used to manage the queryset that is used.
+
+Examples:
+
+.. code:: bash
+
+    $ ./manage.py onfido_sync check
+    $ ./manage.py onfido_sync report
+    $ ./manage.py onfido_sync check --filter complete
+    $ ./manage.py onfido_sync check --exclude complete
 
 Settings
 --------
@@ -137,9 +164,14 @@ If you are hacking on the project, please keep coverage up.
 Contributing
 ------------
 
-Standard GH rules apply: clone the repo to your own account, create a branch, make sure you update the tests, and submit a pull request.
+Standard GH rules apply: clone the repo to your own account, create a branch,
+make sure you update the tests, and submit a pull request.
 
 Status
 ------
 
-This project is very early in its development. We are using it at YunoJuno, but 'caveat emptor'. It currently only supports 'standard' checks, and has very patchy support for the full API. It does what we need it to do right now, and we will extend it as we evolve. If you need or want additional features, get involved :-).
+This project is very early in its development. We are using it at YunoJuno,
+but 'caveat emptor'. It currently only supports 'standard' checks, and has
+very patchy support for the full API. It does what we need it to do right now,
+and we will extend it as we evolve. If you need or want additional features,
+get involved :-).

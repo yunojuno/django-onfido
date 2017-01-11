@@ -102,7 +102,10 @@ class BaseQuerySet(models.QuerySet):
     def pull(self):
         """Call pull method on all objects in the queryset."""
         for obj in self:
-            obj.pull()
+            try:
+                obj.pull()
+            except:
+                logger.exception("Failed to pull Onfido object: %r", obj)
 
 
 class BaseStatusModel(BaseModel):

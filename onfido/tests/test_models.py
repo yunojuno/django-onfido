@@ -165,6 +165,11 @@ class BaseQuerySetTests(TestCase):
         Applicant.objects.all().pull()
         self.assertEqual(mock_pull.call_count, 2)
 
+        # check that an error doesn't blow up everything
+        mock_pull.side_effect = Exception("Something went wrong")
+        Applicant.objects.all().pull()
+        self.assertEqual(mock_pull.call_count, 4)
+
 
 class BaseStatusModelTests(TestCase):
 
