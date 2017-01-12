@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import datetime
 from decimal import Decimal
 import mock
 
@@ -49,7 +48,8 @@ class EventsMixinTests(TestCase):
             action='test.action',
             resource_type='bar',
             status='in_progress',
-            completed_at=now.isoformat()
+            completed_at=now.isoformat(),
+            received_at=now.isoformat(),
         ).save()
         mock_events.return_value = [event]
         mixin = EventsMixin()
