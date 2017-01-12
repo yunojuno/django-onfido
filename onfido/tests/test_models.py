@@ -690,7 +690,7 @@ class EventTests(TestCase):
     def test_save(self):
         """Test save method."""
         data = EventTests.TEST_DATA
-        event = Event().parse(data).save()
+        event = Event(received_at=tz_now()).parse(data).save()
         # real data taken from check.json
         self.assertEqual(event.resource_type, data['payload']['resource_type'])
         self.assertEqual(event.onfido_id, data['payload']['object']['id'])

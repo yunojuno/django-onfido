@@ -480,6 +480,9 @@ class Event(models.Model):
         help_text=_("The timestamp returned from the Onfido API."),
         blank=True, null=True
     )
+    received_at = models.DateTimeField(
+        help_text=_("The timestamp when the server received the event."),
+    )
     raw = JSONField(
         help_text=_("The raw JSON returned from the API."),
         blank=True, null=True

@@ -12,6 +12,7 @@ import logging
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.timezone import now
 
 from .decorators import verify_signature
 from .models import Check, Report, Event
@@ -39,10 +40,11 @@ def status_update(request):
     request it should never fail...
 
     """
+    received_at = now()
     logger.debug("Received Onfido callback: {}".format(request.body))
     data = json.loads(request.body)
     try:
-        event = Event()
+        event = Event(received_at=received_at)
         resource = event.parse(data).resource
         resource.update_status(event)
         if LOG_EVENTS:
