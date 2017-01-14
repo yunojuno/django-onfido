@@ -179,7 +179,7 @@ class EventAdmin(RawMixin, UserMixin, admin.ModelAdmin):
     )
     readonly_fields = (
         'onfido_id', 'resource_type', 'action',
-        'status', 'completed_at', '_raw'
+        'status', 'completed_at', 'received_at', '_raw'
     )
     search_fields = ('onfido_id',)
     exclude = ('raw',)
