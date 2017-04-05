@@ -19,7 +19,7 @@ def _hmac(token, text):
     Calculate SHA1 HMAC digest from request body and token.
 
     Args:
-        token: string, the webhook token from Onfido API settings.
+        token: bytes, the webhook token from Onfido API settings.
         text: string, the text to hash.
 
     Return the SHA1 HMAC as a string.

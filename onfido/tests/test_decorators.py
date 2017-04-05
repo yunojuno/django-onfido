@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse, HttpResponseForbidden
-from django.test import (
-    TestCase,
-    RequestFactory,
-    override_settings
-)
+from django.test import TestCase, RequestFactory
+
 from ..decorators import (
     _hmac,
     _match,
@@ -15,14 +12,15 @@ from ..decorators import (
 )
 
 # taken from a real requestbin webhook callback
-TEST_WEBHOOK_TOKEN = 'bLFiN4S09FV1nH5G7ZJc3nCYqeMZrHcU'
+TEST_WEBHOOK_TOKEN = b'bLFiN4S09FV1nH5G7ZJc3nCYqeMZrHcU'
 TEST_REQUEST_SIGNATURE = '32f77520f7b025f15ef3ab55be178667c92827e3'
+# HttpRequest.body is a bytestring
 TEST_REQUEST_BODY = (
-    '{"payload":{"resource_type":"check","action":"check.form_opened",'
-    '"object":{"id":"923d2717-9abd-4c0b-bc4f-33d769547df5",'
-    '"status":"awaiting_applicant","completed_at":"2016-10-26 16:18:24 UTC",'
-    '"href":"https://api.onfido.com/v1/applicants/4d2ff0dc-3352-4eed-9b7c-'
-    '86ac7b619e4e/checks/923d2717-9abd-4c0b-bc4f-33d769547df5"}}}'
+    b'{"payload":{"resource_type":"check","action":"check.form_opened",'
+    b'"object":{"id":"923d2717-9abd-4c0b-bc4f-33d769547df5",'
+    b'"status":"awaiting_applicant","completed_at":"2016-10-26 16:18:24 UTC",'
+    b'"href":"https://api.onfido.com/v1/applicants/4d2ff0dc-3352-4eed-9b7c-'
+    b'86ac7b619e4e/checks/923d2717-9abd-4c0b-bc4f-33d769547df5"}}}'
 )
 
 

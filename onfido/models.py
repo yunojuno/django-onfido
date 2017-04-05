@@ -96,7 +96,7 @@ class BaseQuerySet(models.QuerySet):
         for obj in self:
             try:
                 obj.fetch()
-            except:
+            except Exception:
                 logger.exception("Failed to fetch Onfido object: %r", obj)
 
     def pull(self):
@@ -104,7 +104,7 @@ class BaseQuerySet(models.QuerySet):
         for obj in self:
             try:
                 obj.pull()
-            except:
+            except Exception:
                 logger.exception("Failed to pull Onfido object: %r", obj)
 
 
@@ -238,7 +238,7 @@ class BaseStatusModel(BaseModel):
         self.updated_at = event.completed_at
         try:
             self.pull()
-        except:
+        except Exception:
             # even if we can't get latest, we should save the changes we
             # have already made to the object
             logger.warn(u"Unable to pull latest from Onfido: '%r'", self)
@@ -314,11 +314,11 @@ class Applicant(BaseModel):
 
     objects = ApplicantQuerySet.as_manager()
 
-    def __unicode__(self):
-        return u"{}".format(self.user.get_full_name() or self.user.username)
+    def __str__(self):
+        return "{}".format(self.user.get_full_name() or self.user.username)
 
     def __repr__(self):
-        return u"<Applicant id={} user_id={}>".format(
+        return "<Applicant id={} user_id={}>".format(
             self.id, self.user.id
         )
 
@@ -360,14 +360,14 @@ class Check(BaseStatusModel):
 
     objects = CheckQuerySet.as_manager()
 
-    def __unicode__(self):
-        return u"{} for {}".format(
+    def __str__(self):
+        return "{} for {}".format(
             self.get_check_type_display().capitalize(),
             self.user.get_full_name() or self.user.username
         )
 
     def __repr__(self):
-        return u"<Check id={} type='{}' user_id={}>".format(
+        return "<Check id={} type='{}' user_id={}>".format(
             self.id,
             self.check_type,
             self.user.id
@@ -427,14 +427,14 @@ class Report(BaseStatusModel):
 
     objects = ReportQuerySet.as_manager()
 
-    def __unicode__(self):
-        return u"{} for {}".format(
+    def __str__(self):
+        return "{} for {}".format(
             self.get_report_type_display().capitalize(),
             self.user.get_full_name() or self.user.username
         )
 
     def __repr__(self):
-        return u"<Report id={} type='{}' user_id={}>".format(
+        return "<Report id={} type='{}' user_id={}>".format(
             self.id,
             self.report_type,
             self.user.id

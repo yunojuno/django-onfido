@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
-import mock
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.test import TestCase, RequestFactory
@@ -40,7 +40,7 @@ class ViewTests(TestCase):
             request = factory.post('/', data=json.dumps(data), content_type='application/json')
             response = status_update(request)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.content, message)
+            self.assertEqual(response.content.decode('utf-8'), message)
 
         # invalid payload
         assert_update({}, 'Unexpected event content.')

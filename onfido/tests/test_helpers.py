@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import mock
+from unittest import mock
 from copy import deepcopy
 
 from dateutil.parser import parse as date_parse

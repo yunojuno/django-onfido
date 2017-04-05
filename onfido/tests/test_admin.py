@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
-import mock
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.test import TestCase

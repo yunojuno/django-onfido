@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
-import mock
+from unittest import mock
 
 from dateutil.parser import parse as date_parse
 
@@ -391,7 +391,6 @@ class ApplicantTests(TestCase):
         """Test string representations handle unicode."""
         applicant = self.applicant
         self.assertIsNotNone(str(applicant))
-        self.assertIsNotNone(unicode(applicant))
         self.assertIsNotNone(repr(applicant))
 
 
@@ -464,7 +463,6 @@ class CheckTests(TestCase):
         """Test string representations handle unicode."""
         check = self.check
         self.assertIsNotNone(str(check))
-        self.assertIsNotNone(unicode(check))
         self.assertIsNotNone(repr(check))
 
     def test_parse(self):
@@ -580,7 +578,6 @@ class ReportTests(TestCase):
         """Test string representations handle unicode."""
         report = self.report
         self.assertIsNotNone(str(report))
-        self.assertIsNotNone(unicode(report))
         self.assertIsNotNone(repr(report))
 
     def test_parse(self):
@@ -703,7 +700,6 @@ class EventTests(TestCase):
         """Test string representations handle unicode."""
         event = Event().parse(EventTests.TEST_DATA)
         self.assertIsNotNone(str(event))
-        self.assertIsNotNone(unicode(event))
         self.assertIsNotNone(repr(event))
 
     def test_parse(self):
