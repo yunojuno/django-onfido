@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from unittest import mock
 from copy import deepcopy
 
 from dateutil.parser import parse as date_parse
@@ -15,6 +14,7 @@ from ..helpers import (
     Check,
     Report
 )
+from ..compat import mock
 
 
 CREATE_APPLICANT_RETURN = {

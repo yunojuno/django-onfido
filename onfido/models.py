@@ -315,7 +315,7 @@ class Applicant(BaseModel):
     objects = ApplicantQuerySet.as_manager()
 
     def __str__(self):
-        return "{}".format(self.user.get_full_name() or self.user.username)
+        return str(self.user)
 
     def __repr__(self):
         return "<Applicant id={} user_id={}>".format(
@@ -363,7 +363,7 @@ class Check(BaseStatusModel):
     def __str__(self):
         return "{} for {}".format(
             self.get_check_type_display().capitalize(),
-            self.user.get_full_name() or self.user.username
+            self.user
         )
 
     def __repr__(self):
@@ -430,7 +430,7 @@ class Report(BaseStatusModel):
     def __str__(self):
         return "{} for {}".format(
             self.get_report_type_display().capitalize(),
-            self.user.get_full_name() or self.user.username
+            self.user
         )
 
     def __repr__(self):
@@ -491,7 +491,7 @@ class Event(models.Model):
     class Meta:
         ordering = ['completed_at']
 
-    def __unicode__(self):
+    def __str__(self):
         return "{} event occurred on {}.{}".format(
             self.action, self.resource_type, self.onfido_id
         )

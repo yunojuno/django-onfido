@@ -6,10 +6,10 @@ This is a simple wrapper around requests.
 
 """
 import logging
-from urllib.parse import urljoin
 
 import requests
 
+from .compat import urlparse
 from .settings import (
     API_ROOT,
     API_KEY
@@ -32,7 +32,7 @@ class ApiError(Exception):
 
 def _url(path):
     """Format absolute API URL."""
-    return urljoin(API_ROOT, path)
+    return urlparse.urljoin(API_ROOT, path)
 
 
 def _headers(api_key=API_KEY):

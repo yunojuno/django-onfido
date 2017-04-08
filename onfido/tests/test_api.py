@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from unittest import mock
-
 from django.test import TestCase
 
 from ..api import (
@@ -11,6 +9,7 @@ from ..api import (
     _respond,
     ApiError,
 )
+from ..compat import mock
 
 
 class ApiTests(TestCase):

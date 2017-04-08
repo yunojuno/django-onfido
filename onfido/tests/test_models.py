@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import datetime
-from unittest import mock
 
 from dateutil.parser import parse as date_parse
 
@@ -19,6 +18,7 @@ from ..models import (
     Event,
     CheckQuerySet
 )
+from ..compat import mock
 
 
 class TestBaseModel(BaseModel):

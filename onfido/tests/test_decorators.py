@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from unittest import mock
-
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse, HttpResponseForbidden
 from django.test import TestCase, RequestFactory
@@ -10,6 +8,7 @@ from ..decorators import (
     _match,
     verify_signature
 )
+from ..compat import mock
 
 # taken from a real requestbin webhook callback
 TEST_WEBHOOK_TOKEN = b'bLFiN4S09FV1nH5G7ZJc3nCYqeMZrHcU'
