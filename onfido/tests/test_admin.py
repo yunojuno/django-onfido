@@ -69,7 +69,7 @@ class RawMixinTests(TestCase):
         self.assertEqual(html, '<code>{<br>&nbsp;&nbsp;&nbsp;&nbsp;"foo":&nbsp;"bar"<br>}</code>')
 
         # test with Decimal (stdlib json won't work) and unicode
-        obj = Applicant(raw={'foo': Decimal(1.0), 'bar': u'åß∂ƒ©˙∆'})
+        obj = Applicant(raw={'foo': Decimal(1.0), 'bar': 'åß∂ƒ©˙∆'})
         html = mixin._raw(obj)
 
 
@@ -87,8 +87,8 @@ class UserMixinTests(TestCase):
 
         assertUser('fred', 'flintstone', 'Fred Flintstone')
         assertUser('', '', '')
-        assertUser(u'fredå', 'flintstone', u'Fredå Flintstone')
+        assertUser('fredå', 'flintstone', 'Fredå Flintstone')
         # this fails, something that title() does to unicode?
         with self.assertRaises(AssertionError):
-            self.assertEqual(u'ƒ', u'ƒ'.title())
-        assertUser(u'ƒredå', '', u'ƒredå'.title())
+            self.assertEqual('ƒ', 'ƒ'.title())
+        assertUser('ƒredå', '', 'ƒredå'.title())

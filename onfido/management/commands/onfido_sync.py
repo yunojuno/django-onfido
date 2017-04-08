@@ -4,7 +4,7 @@ from ...models import Check, Report, Applicant
 
 class Command(BaseCommand):
 
-    help = u"Pull all Check / Report objects."
+    help = "Pull all Check / Report objects."
 
     def add_arguments(self, parser):
         parser.add_argument(

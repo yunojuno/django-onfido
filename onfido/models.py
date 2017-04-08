@@ -241,7 +241,7 @@ class BaseStatusModel(BaseModel):
         except Exception:
             # even if we can't get latest, we should save the changes we
             # have already made to the object
-            logger.warn(u"Unable to pull latest from Onfido: '%r'", self)
+            logger.warn("Unable to pull latest from Onfido: '%r'", self)
             self.save()
         on_status_change.send(
             self.__class__,
@@ -497,7 +497,7 @@ class Event(models.Model):
         )
 
     def __repr__(self):
-        return u"<Event id={} action='{}' onfido_id='{}.{}'>".format(
+        return "<Event id={} action='{}' onfido_id='{}.{}'>".format(
             self.id, self.action, self.resource_type, self.onfido_id
         )
 

@@ -348,7 +348,7 @@ class ApplicantManagerTests(TestCase):
     }
 
     def setUp(self):
-        self.user = User.objects.create_user('fred', first_name=u"œ∑´®†¥")
+        self.user = User.objects.create_user('fred', first_name="œ∑´®†¥")
         self.applicant = Applicant(onfido_id='foo', user=self.user)
 
     # @mock.patch.object(BaseModel, 'full_clean')
@@ -367,7 +367,7 @@ class ApplicantTests(TestCase):
     """onfido.model.Applicant tests."""
 
     def setUp(self):
-        self.user = User(id=1, first_name=u"œ∑´®†¥")
+        self.user = User(id=1, first_name="œ∑´®†¥")
         self.applicant = Applicant(onfido_id='foo', user=self.user)
 
     def test_defaults(self):
@@ -401,7 +401,7 @@ class CheckManagerTests(TestCase):
     @mock.patch.object(BaseModel, 'full_clean')
     def test_create_check(self, mock_clean):
         """Test the create method parses response."""
-        user = User.objects.create_user(username='baz', first_name=u"œ∑´®†¥")
+        user = User.objects.create_user(username='baz', first_name="œ∑´®†¥")
         applicant = Applicant(onfido_id='foo', user=user).save()
         data = {
             "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
@@ -428,7 +428,7 @@ class CheckTests(TestCase):
     """onfido.models.Check tests."""
 
     def setUp(self):
-        self.user = User.objects.create_user(username='fred', first_name=u"œ∑´®†¥")
+        self.user = User.objects.create_user(username='fred', first_name="œ∑´®†¥")
         self.applicant = Applicant(
             onfido_id='foo',
             user=self.user
@@ -496,7 +496,7 @@ class ReportManagerTests(TestCase):
     }
 
     def setUp(self):
-        self.user = User.objects.create_user(username="foo", first_name=u"œ∑´®†¥")
+        self.user = User.objects.create_user(username="foo", first_name="œ∑´®†¥")
         self.applicant = Applicant(
             user=self.user,
             onfido_id='foo',
@@ -532,7 +532,7 @@ class ReportTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             username="foo",
-            first_name=u"œ∑´®†¥"
+            first_name="œ∑´®†¥"
         )
         self.applicant = Applicant(
             onfido_id='foo',
@@ -634,7 +634,7 @@ class EventTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             username="foo",
-            first_name=u"œ∑´®†¥"
+            first_name="œ∑´®†¥"
         )
         self.applicant = Applicant(
             onfido_id='foo',
