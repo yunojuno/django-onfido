@@ -3,9 +3,6 @@ from os import path, pardir, chdir
 from setuptools import setup, find_packages
 
 README = open(path.join(path.dirname(__file__), 'README.rst')).read()
-# requirements.txt must be included in MANIFEST.in and include_package_data must be True
-# in order for this to work; ensures that tox can use the setup to enforce requirements
-REQUIREMENTS = '\n'.join(open(path.join(path.dirname(__file__), 'requirements.txt')).readlines())
 # allow setup.py to be run from any path
 chdir(path.normpath(path.join(path.abspath(__file__), pardir)))
 
@@ -13,19 +10,29 @@ setup(
     name="django-onfido",
     version="0.10.0",
     packages=find_packages(),
-    install_requires=REQUIREMENTS,
+    install_requires=[
+        'django>=1.8',
+        'psycopg2>=2.6',
+        'python-dateutil>=2.5',
+        'requests>=2.10',
+        'simplejson>=3.8',
+    ],
     include_package_data=True,
     description='Django app for integration with Onfido.',
     license='MIT',
     long_description=README,
     url='https://github.com/yunojuno/django-onfido',
-    author='Hugo Rodger-Brown',
+    author='YunoJuno',
     author_email='code@yunojuno.com',
-    maintainer='Hugo Rodger-Brown',
-    maintainer_email='hugo@yunojuno.com',
+    maintainer='YunoJuno',
+    maintainer_email='code@yunojuno.com',
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
+        'Framework :: Django :: 1.8',
+        'Framework :: Django :: 1.9',
+        'Framework :: Django :: 1.10',
+        'Framework :: Django :: 1.11',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
