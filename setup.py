@@ -8,10 +8,10 @@ chdir(path.normpath(path.join(path.abspath(__file__), pardir)))
 
 setup(
     name="django-onfido",
-    version="0.11",
+    version="0.11.1",
     packages=find_packages(),
     install_requires=[
-        'django>=1.8',
+        'django>=1.9',
         'psycopg2>=2.6',
         'python-dateutil>=2.5',
         'requests>=2.10',
@@ -29,7 +29,6 @@ setup(
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
-        'Framework :: Django :: 1.8',
         'Framework :: Django :: 1.9',
         'Framework :: Django :: 1.10',
         'Framework :: Django :: 1.11',
