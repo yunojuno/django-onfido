@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from decimal import Decimal
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
@@ -28,7 +28,7 @@ class ResultMixinTests(TestCase):
 
         def request():
             request = mock.Mock()
-            request.user = User()
+            request.user = get_user_model()()
             return request
 
         check = Check()
@@ -83,7 +83,7 @@ class UserMixinTests(TestCase):
 
         def assertUser(first_name, last_name, expected):
             mixin = UserMixin()
-            user = User(first_name=first_name, last_name=last_name)
+            user = get_user_model()(first_name=first_name, last_name=last_name)
             obj = mock.Mock(user=user)
             self.assertEqual(mixin._user(obj), expected)
 

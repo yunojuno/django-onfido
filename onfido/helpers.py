@@ -12,7 +12,7 @@ def create_applicant(user, **kwargs):
     """Create an applicant in the Onfido system.
 
     Args:
-        user: an auth.User instance to register as an applicant.
+        user: a Django User instance to register as an applicant.
     Kwargs:
        any kwargs passed in are merged into the data dict sent to the API. This
        enables support for additional applicant properties - e.g dob, gender,

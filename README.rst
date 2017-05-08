@@ -47,9 +47,9 @@ The main use case is as follows:
 
 .. code:: python
 
-    >>> from django.contrib.auth.models import User
+    >>> from django.contrib.auth import get_user_model
     >>> from onfido.helpers import create_applicant
-    >>> user = User.objects.last()  # any old one will do
+    >>> user = get_user_model().objects.last()  # any old one will do
     >>> applicant = create_applicant(user)
     DEBUG Making POST request to https://api.onfido.com/v2/applicants
     DEBUG <Response [201]>
