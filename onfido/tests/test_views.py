@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import TestCase, RequestFactory
 
 from ..compat import mock
@@ -37,7 +37,11 @@ class ViewTests(TestCase):
 
         @mock.patch('onfido.decorators._match', lambda x, y: True)
         def assert_update(data, message):
-            request = factory.post('/', data=json.dumps(data), content_type='application/json')
+            request = factory.post(
+                '/',
+                data=json.dumps(data),
+                content_type='application/json'
+            )
             response = status_update(request)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.content.decode('utf-8'), message)
@@ -78,7 +82,7 @@ class ViewTests(TestCase):
 
         # now check that a good payload passes.
         data['payload']['resource_type'] = 'check'
-        user = User.objects.create_user('fred')
+        user = get_user_model().objects.create_user('fred')
         applicant = Applicant(user=user, onfido_id='foo').save()
         check = Check(user=user, applicant=applicant, check_type='standard')
         check.onfido_id = data['payload']['object']['id']

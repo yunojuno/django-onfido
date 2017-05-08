@@ -4,7 +4,7 @@ import logging
 
 from dateutil.parser import parse as date_parse
 
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import now as tz_now
@@ -307,7 +307,7 @@ class Applicant(BaseModel):
     """An Onfido applicant record."""
 
     user = models.OneToOneField(
-        User,
+        settings.AUTH_USER_MODEL,
         help_text=_("Django user that maps to this applicant."),
         related_name='onfido_applicant'
     )
@@ -343,7 +343,7 @@ class Check(BaseStatusModel):
     )
 
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         help_text=_("The Django user (denormalised from Applicant to make navigation easier)."),  # noqa
         related_name='onfido_checks'
     )
@@ -410,7 +410,7 @@ class Report(BaseStatusModel):
     )
 
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         help_text=_("The Django user (denormalised from Applicant to make navigation easier)."),  # noqa
         related_name='onfido_reports'
     )

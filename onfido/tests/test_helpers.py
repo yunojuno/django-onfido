@@ -3,7 +3,7 @@ from copy import deepcopy
 
 from dateutil.parser import parse as date_parse
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from ..helpers import (
@@ -37,7 +37,7 @@ class HelperTests(TestCase):
         """Test the create_applicant function."""
         data = deepcopy(CREATE_APPLICANT_RETURN)
         mock_post.return_value = data
-        user = User.objects.create_user(
+        user = get_user_model().objects.create_user(
             username='fred',
             first_name='Fred',
             last_name='Flintstone',
@@ -61,7 +61,7 @@ class HelperTests(TestCase):
         """Test the create_applicant function with extra custom POST data."""
         data = deepcopy(CREATE_APPLICANT_RETURN)
         mock_post.return_value = data
-        user = User.objects.create_user(
+        user = get_user_model().objects.create_user(
             username='fred',
             first_name='Fred',
             last_name='Flintstone',
@@ -117,7 +117,7 @@ class HelperTests(TestCase):
             ],
         }
         mock_post.return_value = check_data
-        user = User.objects.create_user(
+        user = get_user_model().objects.create_user(
             username='fred',
             first_name='Fred',
             last_name='Flintstone',

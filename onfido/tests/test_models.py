@@ -3,7 +3,7 @@ import datetime
 
 from dateutil.parser import parse as date_parse
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db.models import Model, query
 from django.test import TestCase
 from django.utils.timezone import now as tz_now
@@ -128,7 +128,7 @@ class BaseQuerySetTests(TestCase):
     def create_applicant(self, username):
         """Create new Applicant and user."""
         data = {'id': username, 'created_at': tz_now().isoformat()}
-        user = User.objects.create_user(username)
+        user = get_user_model().objects.create_user(username)
         applicant = Applicant.objects.create_applicant(user, raw=data)
         return applicant
 
@@ -298,12 +298,15 @@ class BaseStatusModelTests(TestCase):
             "result": "clear",
             "href": "http://foo"
         }
-        user = User()
+        user = get_user_model()()
         obj = TestBaseStatusModel().parse(data)
         event = obj._override_event(user)
         self.assertEqual(event.onfido_id, obj.onfido_id)
         self.assertEqual(event.action, "manual.override")
-        self.assertEqual(event.resource_type, TestBaseStatusModel._meta.model_name)
+        self.assertEqual(
+            event.resource_type,
+            TestBaseStatusModel._meta.model_name
+        )
         self.assertEqual(event.status, obj.status)
         self.assertEqual(event.completed_at, now)
 
@@ -319,7 +322,7 @@ class BaseStatusModelTests(TestCase):
             "result": None,
             "href": "http://foo"
         }
-        user = User()
+        user = get_user_model()()
         obj = Check().parse(data)
         self.assertIsNone(obj.is_clear)
         obj = obj.mark_as_clear(user)
@@ -348,7 +351,10 @@ class ApplicantManagerTests(TestCase):
     }
 
     def setUp(self):
-        self.user = User.objects.create_user('fred', first_name="œ∑´®†¥")
+        self.user = get_user_model().objects.create_user(
+            'fred',
+            first_name="œ∑´®†¥"
+        )
         self.applicant = Applicant(onfido_id='foo', user=self.user)
 
     # @mock.patch.object(BaseModel, 'full_clean')
@@ -367,7 +373,7 @@ class ApplicantTests(TestCase):
     """onfido.model.Applicant tests."""
 
     def setUp(self):
-        self.user = User(id=1, first_name="œ∑´®†¥")
+        self.user = get_user_model()(id=1, first_name="œ∑´®†¥")
         self.applicant = Applicant(onfido_id='foo', user=self.user)
 
     def test_defaults(self):
@@ -401,7 +407,10 @@ class CheckManagerTests(TestCase):
     @mock.patch.object(BaseModel, 'full_clean')
     def test_create_check(self, mock_clean):
         """Test the create method parses response."""
-        user = User.objects.create_user(username='baz', first_name="œ∑´®†¥")
+        user = get_user_model().objects.create_user(
+            username='baz',
+            first_name="œ∑´®†¥"
+        )
         applicant = Applicant(onfido_id='foo', user=user).save()
         data = {
             "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
@@ -428,7 +437,10 @@ class CheckTests(TestCase):
     """onfido.models.Check tests."""
 
     def setUp(self):
-        self.user = User.objects.create_user(username='fred', first_name="œ∑´®†¥")
+        self.user = get_user_model().objects.create_user(
+            username='fred',
+            first_name="œ∑´®†¥"
+        )
         self.applicant = Applicant(
             onfido_id='foo',
             user=self.user
@@ -476,7 +488,10 @@ class CheckTests(TestCase):
         }
         check = Check().parse(data)
         # real data taken from check.json
-        self.assertEqual(check.onfido_id, "c26f22d5-4903-401f-8a48-7b0211d03c1f")
+        self.assertEqual(
+            check.onfido_id,
+            "c26f22d5-4903-401f-8a48-7b0211d03c1f"
+        )
         self.assertEqual(check.created_at, date_parse(data['created_at']))
         self.assertEqual(check.status, "awaiting_applicant")
         self.assertEqual(check.result, "clear")
@@ -496,7 +511,10 @@ class ReportManagerTests(TestCase):
     }
 
     def setUp(self):
-        self.user = User.objects.create_user(username="foo", first_name="œ∑´®†¥")
+        self.user = get_user_model().objects.create_user(
+            username="foo",
+            first_name="œ∑´®†¥"
+        )
         self.applicant = Applicant(
             user=self.user,
             onfido_id='foo',
@@ -530,7 +548,7 @@ class ReportTests(TestCase):
     """onfido.models.Report tests."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.user = get_user_model().objects.create_user(
             username="foo",
             first_name="œ∑´®†¥"
         )
@@ -591,7 +609,10 @@ class ReportTests(TestCase):
         }
         report = Report().parse(data)
         # real data taken from check.json
-        self.assertEqual(report.onfido_id, "c26f22d5-4903-401f-8a48-7b0211d03c1f")
+        self.assertEqual(
+            report.onfido_id,
+            "c26f22d5-4903-401f-8a48-7b0211d03c1f"
+        )
         self.assertEqual(report.created_at, date_parse(data['created_at']))
         self.assertEqual(report.status, "awaiting_applicant")
         self.assertEqual(report.result, "clear")
@@ -632,7 +653,7 @@ class EventTests(TestCase):
     }
 
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.user = get_user_model().objects.create_user(
             username="foo",
             first_name="œ∑´®†¥"
         )
@@ -693,7 +714,10 @@ class EventTests(TestCase):
         self.assertEqual(event.onfido_id, data['payload']['object']['id'])
         self.assertEqual(event.action, data['payload']['action'])
         self.assertEqual(event.status, data['payload']['object']['status'])
-        self.assertEqual(event.completed_at, date_parse(data['payload']['object']['completed_at']))
+        self.assertEqual(
+            event.completed_at,
+            date_parse(data['payload']['object']['completed_at'])
+        )
         self.assertEqual(event.raw, data)
 
     def test_unicode_str_repr(self):
@@ -711,5 +735,8 @@ class EventTests(TestCase):
         self.assertEqual(event.onfido_id, data['payload']['object']['id'])
         self.assertEqual(event.action, data['payload']['action'])
         self.assertEqual(event.status, data['payload']['object']['status'])
-        self.assertEqual(event.completed_at, date_parse(data['payload']['object']['completed_at']))
+        self.assertEqual(
+            event.completed_at,
+            date_parse(data['payload']['object']['completed_at'])
+        )
         self.assertEqual(event.raw, data)
