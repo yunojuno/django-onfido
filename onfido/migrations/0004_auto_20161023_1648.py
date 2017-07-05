@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import unicode_literals
 
 from django.db import migrations, models
 from django.conf import settings
@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='event',
             name='raw',
-            field=models.TextField(default=b'{}', help_text='The raw JSON returned from the API.', null=True, blank=True),
+            field=models.TextField(default='{}', help_text='The raw JSON returned from the API.', null=True, blank=True),
         ),
         migrations.AddField(
             model_name='event',
