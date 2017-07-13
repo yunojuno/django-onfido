@@ -51,6 +51,7 @@ def _match(token, request):
         logger.warn("Onfido callback missing X-Signature - this may be an unauthorised request.")
         return False
     except Exception:
+        logger.exception("Error attempting to decode Onfido signature.")
         return False
 
 

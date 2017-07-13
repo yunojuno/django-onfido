@@ -7,23 +7,27 @@ from django.conf import settings
 # the API HTTP root url
 API_ROOT = "https://api.onfido.com/v2/"
 
+
+def _setting(key, default):
+    return (
+        getenv(key, default) or
+        getattr(settings, key, default)
+    )
+
+
 # API key from evnironment by default
-API_KEY = (
-    getenv('ONFIDO_API_KEY', None) or
-    getattr(settings, 'ONFIDO_API_KEY', None)
-)
+API_KEY = _setting('ONFIDO_API_KEY', None)
 
 # Webhook token - see https://documentation.onfido.com/#webhooks
-WEBHOOK_TOKEN = (
-    getenv('ONFIDO_WEBHOOK_TOKEN', None) or
-    getattr(settings, 'ONFIDO_WEBHOOK_TOKEN', None)
-)
+WEBHOOK_TOKEN = _setting('ONFIDO_WEBHOOK_TOKEN', None)
+# token must be a bytestring for HMAC function to work
+WEBHOOK_TOKEN = str.encode(WEBHOOK_TOKEN) if WEBHOOK_TOKEN else None
 
 # Set to False to turn off event logging
-LOG_EVENTS = getattr(settings, 'ONFIDO_LOG_EVENTS', True)
+LOG_EVENTS = _setting('ONFIDO_LOG_EVENTS', True)
 
 # Set to True to bypass request verification (NOT RECOMMENDED)
-TEST_MODE = getattr(settings, 'ONFIDO_TEST_MODE', False)
+TEST_MODE = _setting('ONFIDO_TEST_MODE', False)
 
 
 def DEFAULT_REPORT_SCRUBBER(raw):
@@ -34,6 +38,7 @@ def DEFAULT_REPORT_SCRUBBER(raw):
     except KeyError:
         pass
     return raw
+
 
 # function used to scrub sensitive data from reports
 scrub_report_data = (
