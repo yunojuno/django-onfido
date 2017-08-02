@@ -220,11 +220,14 @@ class BaseStatusModel(BaseModel):
 
         If the update is a change to 'complete', then we fire a second
         signal - 'complete' is the terminal state change, and therefore
-        of most interest to clients - typically the on_status_update
+        of most interest to clients - typically the on_status_change
         signal would be registered for logging a complete history of
         changes, whereas the on_completion signal would be used to do
         something more useful - updating the status of the user, sending
         them an email etc.
+
+        If the update is a 'withdrawn' status, indicating the user has
+        left the onfido process, then we reset 'is_clear' value to False.
 
         Args:
             event: Event object containing the update information
@@ -254,6 +257,8 @@ class BaseStatusModel(BaseModel):
         )
         if event.status == 'complete':
             on_completion.send(self.__class__, instance=self)
+        elif event.status == 'withdrawn':
+            self.is_clear = False
         return self
 
     def parse(self, raw_json):
@@ -261,8 +266,7 @@ class BaseStatusModel(BaseModel):
         super(BaseStatusModel, self).parse(raw_json)
         self.result = self.raw['result']
         self.status = self.raw['status']
-        if self.result == 'clear':
-            self.is_clear = True
+        self.is_clear = True if self.result == 'clear' else False
         return self
 
     def mark_as_clear(self, user):

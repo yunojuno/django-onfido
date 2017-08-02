@@ -237,6 +237,7 @@ class BaseStatusModelTests(TestCase):
         obj = obj.update_status(event)
         self.assertEqual(obj.status, event.status)
         self.assertEqual(obj.updated_at, now)
+        self.assertEqual(obj.is_clear, None)
         mock_pull.assert_called_once_with()
         mock_save.assert_not_called()
         mock_update.assert_called_once_with(
@@ -254,6 +255,7 @@ class BaseStatusModelTests(TestCase):
         obj = obj.update_status(event)
         self.assertEqual(obj.status, event.status)
         self.assertEqual(obj.updated_at, now)
+        self.assertEqual(obj.is_clear, None)
         mock_pull.assert_called_once_with()
         mock_save.assert_not_called()
         mock_update.assert_called_once_with(
@@ -268,12 +270,31 @@ class BaseStatusModelTests(TestCase):
             instance=obj
         )
 
+        # if we send 'complete' as the status we should fire the second signal
+        event, obj = reset()
+        event.status = 'withdrawn'
+        obj = obj.update_status(event)
+        self.assertEqual(obj.status, event.status)
+        self.assertEqual(obj.updated_at, now)
+        self.assertEqual(obj.is_clear, False)
+        mock_pull.assert_called_once_with()
+        mock_save.assert_not_called()
+        mock_update.assert_called_once_with(
+            TestBaseStatusModel,
+            instance=obj,
+            event=event.action,
+            status_before='before',
+            status_after=event.status
+        )
+        self.assertFalse(mock_complete.called)
+
         # test that we can handle the API failing on pull()
         event, obj = reset()
         mock_pull.side_effect = Exception("Something went wrong in the API")
         obj = obj.update_status(event)
         self.assertEqual(obj.status, event.status)
         self.assertEqual(obj.updated_at, now)
+        self.assertEqual(obj.is_clear, None)
         mock_pull.assert_called_once_with()
         mock_save.assert_called_once_with()
         mock_update.assert_called_once_with(
@@ -324,7 +345,7 @@ class BaseStatusModelTests(TestCase):
         }
         user = get_user_model()()
         obj = Check().parse(data)
-        self.assertIsNone(obj.is_clear)
+        self.assertFalse(obj.is_clear)
         obj = obj.mark_as_clear(user)
         mock_save.assert_called_once_with()
         mock_event_save.assert_called_once_with()
