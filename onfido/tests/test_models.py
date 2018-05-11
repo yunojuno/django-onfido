@@ -397,6 +397,26 @@ class ApplicantTests(TestCase):
         self.assertIsNotNone(str(applicant))
         self.assertIsNotNone(repr(applicant))
 
+    def test_parse(self):
+        """Test default scrubbing of data."""
+        applicant = self.applicant
+        data = {
+            "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
+            "created_at": "2016-10-15T19:05:50Z",
+            "addresses": [],
+            "gender": "male",
+            "country": "gbr",
+            "href": "/",
+        }
+        applicant.parse(data)
+        self.assertEqual(
+            applicant.raw,
+            {
+                "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
+                "created_at": "2016-10-15T19:05:50Z",
+                "href": "/",
+            }
+        )
 
 class CheckManagerTests(TestCase):
 
