@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """onfido views.
 
 The Onfido views are mainly callback handlers for the updates

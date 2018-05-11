@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-"""onfido settings."""
 from os import getenv
 
 from django.conf import settings
@@ -39,9 +37,19 @@ def DEFAULT_REPORT_SCRUBBER(raw):
         pass
     return raw
 
+def DEFAULT_APPLICANT_SCRUBBER(raw):
+    """Default applicant scrubber, removes all personal data."""
+    for k in [k for k in raw.keys() if k not in ('id', 'href', 'created_at')]:
+        del raw[k]
+    return raw
 
-# function used to scrub sensitive data from reports
+# functions used to scrub sensitive data from reports
 scrub_report_data = (
     getattr(settings, 'ONFIDO_REPORT_SCRUBBER', None) or
     DEFAULT_REPORT_SCRUBBER
+)
+
+scrub_applicant_data = (
+    getattr(settings, 'ONFIDO_APPLICANT_SCRUBBER', None) or
+    DEFAULT_APPLICANT_SCRUBBER
 )

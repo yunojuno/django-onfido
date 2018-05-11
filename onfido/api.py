@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Basic wire operations with the API - GET/POST/PUT.
 
@@ -6,10 +5,10 @@ This is a simple wrapper around requests.
 
 """
 import logging
+from urllib import parse as urlparse
 
 import requests
 
-from .compat import urlparse
 from .settings import (
     API_ROOT,
     API_KEY

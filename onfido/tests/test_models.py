@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 import datetime
+from unittest import mock
 
 from dateutil.parser import parse as date_parse
-
 from django.contrib.auth import get_user_model
 from django.db.models import Model, query
 from django.test import TestCase
@@ -18,7 +17,6 @@ from ..models import (
     Event,
     CheckQuerySet
 )
-from ..compat import mock
 
 
 class TestBaseModel(BaseModel):

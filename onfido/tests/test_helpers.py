@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 from copy import deepcopy
+from unittest import mock
 
 from dateutil.parser import parse as date_parse
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
@@ -14,7 +13,6 @@ from ..helpers import (
     Check,
     Report
 )
-from ..compat import mock
 
 
 CREATE_APPLICANT_RETURN = {

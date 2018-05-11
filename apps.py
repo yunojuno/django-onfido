@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """django-onfido apps module."""
 from django.apps import AppConfig
 # from django.core.exceptions import ImproperlyConfigured

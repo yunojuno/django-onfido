@@ -1,19 +1,16 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import datetime
 import logging
 
 from dateutil.parser import parse as date_parse
 
 from django.conf import settings
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import now as tz_now
 
 from .api import get
-from .db.fields import JSONField
-from .settings import scrub_report_data
+from .settings import scrub_report_data, scrub_applicant_data
 from .signals import on_status_change, on_completion
 
 logger = logging.getLogger(__name__)
@@ -310,8 +307,9 @@ class Applicant(BaseModel):
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
         help_text=_("Django user that maps to this applicant."),
-        related_name='onfido_applicant'
+        related_name='onfido_applicant',
     )
 
     objects = ApplicantQuerySet.as_manager()
@@ -324,6 +322,17 @@ class Applicant(BaseModel):
             self.id, self.user.id
         )
 
+    def parse(self, raw_json):
+        """
+        Parse the raw value out into other properties.
+
+        Before parsing the data, this method will call the
+        scrub_report_data function to remove sensitive data
+        so that it is not saved into the local object.
+
+        """
+        super().parse(scrub_applicant_data(raw_json))
+        return self
 
 class CheckQuerySet(BaseQuerySet):
 
@@ -346,11 +355,13 @@ class Check(BaseStatusModel):
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
         help_text=_("The Django user (denormalised from Applicant to make navigation easier)."),  # noqa
         related_name='onfido_checks'
     )
     applicant = models.ForeignKey(
         Applicant,
+        on_delete=models.CASCADE,
         help_text=_("The applicant for whom the check is being made."),
         related_name='checks'
     )
@@ -413,11 +424,13 @@ class Report(BaseStatusModel):
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
         help_text=_("The Django user (denormalised from Applicant to make navigation easier)."),  # noqa
         related_name='onfido_reports'
     )
     onfido_check = models.ForeignKey(
         Check,
+        on_delete=models.CASCADE,
         help_text=_("Check to which this report is attached."),
         related_name='reports'
     )
@@ -451,8 +464,7 @@ class Report(BaseStatusModel):
         so that it is not saved into the local object.
 
         """
-        scrub_report_data(raw_json)
-        super(Report, self).parse(raw_json)
+        super().parse(scrub_report_data(raw_json))
         self.report_type = self.raw['name']
         return self
 
@@ -460,7 +472,6 @@ class Report(BaseStatusModel):
 class Event(models.Model):
 
     """Used to record callback events received from the API."""
-
     onfido_id = models.CharField(
         'Onfido ID',
         max_length=40,

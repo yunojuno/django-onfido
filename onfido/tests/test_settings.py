@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
+from unittest import mock
+
 from django.test import TestCase
 
 from .. import settings
-from ..compat import mock
 
 
 class SettingsTests(TestCase):
