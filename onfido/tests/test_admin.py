@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from decimal import Decimal
+from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -16,7 +14,6 @@ from ..admin import (
     ResultMixin,
     UserMixin,
 )
-from ..compat import mock
 
 
 class ResultMixinTests(TestCase):

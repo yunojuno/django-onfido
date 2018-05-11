@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import simplejson as json  # simplejson supports Decimal
 
 from django.contrib import admin

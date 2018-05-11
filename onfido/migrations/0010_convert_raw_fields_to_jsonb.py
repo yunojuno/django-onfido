@@ -3,8 +3,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
-
-from ..db.fields import JSONField
+from django.contrib.postgres.fields import JSONField
 
 
 class Migration(migrations.Migration):

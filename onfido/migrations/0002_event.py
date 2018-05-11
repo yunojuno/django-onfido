@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('status_before', models.CharField(help_text='The status of the object before the event.', max_length=20)),
                 ('status_after', models.CharField(help_text='The status of the object after the event.', max_length=20)),
                 ('completed_at', models.DateTimeField(help_text='The completed_at timestamp returned from the API callback.')),
-                ('user', models.ForeignKey(related_name='onfido_events', to=settings.AUTH_USER_MODEL, help_text='The user who triggered the event.')),
+                ('user', models.ForeignKey(related_name='onfido_events', to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, help_text='The user who triggered the event.')),
             ],
         ),
     ]

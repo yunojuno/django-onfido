@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 import datetime
+from unittest import mock
 
 from dateutil.parser import parse as date_parse
-
 from django.contrib.auth import get_user_model
 from django.db.models import Model, query
 from django.test import TestCase
@@ -18,7 +17,6 @@ from ..models import (
     Event,
     CheckQuerySet
 )
-from ..compat import mock
 
 
 class TestBaseModel(BaseModel):
@@ -399,6 +397,26 @@ class ApplicantTests(TestCase):
         self.assertIsNotNone(str(applicant))
         self.assertIsNotNone(repr(applicant))
 
+    def test_parse(self):
+        """Test default scrubbing of data."""
+        applicant = self.applicant
+        data = {
+            "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
+            "created_at": "2016-10-15T19:05:50Z",
+            "addresses": [],
+            "gender": "male",
+            "country": "gbr",
+            "href": "/",
+        }
+        applicant.parse(data)
+        self.assertEqual(
+            applicant.raw,
+            {
+                "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
+                "created_at": "2016-10-15T19:05:50Z",
+                "href": "/",
+            }
+        )
 
 class CheckManagerTests(TestCase):
 

@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
+from unittest import mock
+
 from django.test import TestCase
 
 from .. import settings
-from ..compat import mock
 
 
 class SettingsTests(TestCase):
@@ -44,3 +44,38 @@ class SettingsTests(TestCase):
         scrub_report_data(data)
         self.assertTrue('breakdown' in data)
         self.assertTrue('properties' in data)
+
+    def test_default_applicant_scrubber(self):
+        """Test the applicant_scrubber default function."""
+        data = {
+            "addresses": [],
+            "country": "gbr",
+            "country_of_birth": None,
+            "created_at": "2017-05-03T13:12:17Z",
+            "dob": None,
+            "email": "foobar@example.com",
+            "first_name": "Foo",
+            "gender": None,
+            "href": "/v2/applicants/1b0f8e99-da6b-4ca5-9580-eed99ff691cd",
+            "id": "1b0f8e97-dc6b-4ca5-9580-eed99ff691cd",
+            "id_numbers": [],
+            "last_name": "Bar",
+            "middle_name": None,
+            "mobile": None,
+            "mothers_maiden_name": None,
+            "nationality": None,
+            "previous_last_name": None,
+            "sandbox": False,
+            "telephone": None,
+            "title": None,
+            "town_of_birth": None
+        }
+        clean = settings.DEFAULT_APPLICANT_SCRUBBER(data)
+        self.assertEqual(
+            clean,
+            {
+                "created_at": "2017-05-03T13:12:17Z",
+                "href": "/v2/applicants/1b0f8e99-da6b-4ca5-9580-eed99ff691cd",
+                "id": "1b0f8e97-dc6b-4ca5-9580-eed99ff691cd",
+            }
+        )

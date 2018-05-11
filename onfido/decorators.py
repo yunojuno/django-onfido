@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-"""onfido function decorators."""
 from functools import wraps
 import hashlib
 import hmac

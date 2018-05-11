@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 import json
+from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase, RequestFactory
 
-from ..compat import mock
 from ..models import (
     Applicant,
     Check,
