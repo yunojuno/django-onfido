@@ -7,11 +7,11 @@ chdir(path.normpath(path.join(path.abspath(__file__), pardir)))
 
 setup(
     name="django-onfido",
-    version="0.12",
+    version="0.12.1",
     packages=find_packages(),
     install_requires=[
         'django>=1.11',
-        'psycopg2>=2.6',
+        'psycopg2-binary>=2.6',
         'python-dateutil>=2.5',
         'requests>=2.10',
         'simplejson>=3.8',
