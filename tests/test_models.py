@@ -7,28 +7,28 @@ from django.db.models import Model, query
 from django.test import TestCase
 from django.utils.timezone import now as tz_now
 
-from ..api import ApiError
-from ..models import (
+from onfido.api import ApiError
+from onfido.models import (
+    Applicant,
     BaseModel,
     BaseStatusModel,
-    Applicant,
     Check,
-    Report,
+    CheckQuerySet,
     Event,
-    CheckQuerySet
+    Report,
 )
 
 
-class TestBaseModel(BaseModel):
-
+class BaseModelInstance(BaseModel):
     class Meta:
         managed = False
+        app_label = "tmp"
 
 
-class TestBaseStatusModel(BaseStatusModel):
-
+class BaseStatusModelInstance(BaseStatusModel):
     class Meta:
         managed = False
+        app_label = "tmp"
 
 
 class BaseModelTests(TestCase):
@@ -36,24 +36,24 @@ class BaseModelTests(TestCase):
     """onfido.models.BaseModel tests."""
 
     def test_defaults(self):
-        obj = TestBaseModel()
+        obj = BaseModelInstance()
         self.assertEqual(obj.id, None)
-        self.assertEqual(obj.onfido_id, '')
+        self.assertEqual(obj.onfido_id, "")
         self.assertEqual(obj.created_at, None)
         self.assertEqual(obj.raw, None)
 
-    @mock.patch.object(BaseModel, 'full_clean')
-    @mock.patch.object(Model, 'save')
+    @mock.patch.object(BaseModel, "full_clean")
+    @mock.patch.object(Model, "save")
     def test_save(self, mock_save, mock_clean):
         """Test that save method returns self."""
-        obj = TestBaseModel()
+        obj = BaseModelInstance()
         self.assertEqual(obj.save(), obj)
 
     def test_href(self):
         """Test the href property."""
-        raw = {'href': 'foo'}
-        obj = TestBaseModel(raw=raw)
-        self.assertEqual(obj.href, raw['href'])
+        raw = {"href": "foo"}
+        obj = BaseModelInstance(raw=raw)
+        self.assertEqual(obj.href, raw["href"])
 
     def test_parse(self):
         """Test the parse method."""
@@ -64,12 +64,12 @@ class BaseModelTests(TestCase):
             "type": "standard",
             "result": "clear",
         }
-        obj = TestBaseModel().parse(data)
-        self.assertEqual(obj.onfido_id, data['id'])
-        self.assertEqual(obj.created_at, date_parse(data['created_at']))
+        obj = BaseModelInstance().parse(data)
+        self.assertEqual(obj.onfido_id, data["id"])
+        self.assertEqual(obj.created_at, date_parse(data["created_at"]))
 
-    @mock.patch.object(BaseModel, 'save')
-    @mock.patch('onfido.models.get')
+    @mock.patch.object(BaseModel, "save")
+    @mock.patch("onfido.models.get")
     def test_fetch(self, mock_get, mock_save):
         """Test the fetch method calls the API."""
         data = {
@@ -78,40 +78,40 @@ class BaseModelTests(TestCase):
             "status": "awaiting_applicant",
             "type": "standard",
             "result": "clear",
-            "href": "/"
+            "href": "/",
         }
         mock_get.return_value = data
-        obj = TestBaseModel(raw={'href': '/'})
+        obj = BaseModelInstance(raw={"href": "/"})
         obj.fetch()
         # check that it has update raw, but parsed the return value
         self.assertEqual(obj.raw, data)
-        self.assertEqual(obj.onfido_id, data['id'])
-        self.assertEqual(obj.created_at, date_parse(data['created_at']))
+        self.assertEqual(obj.onfido_id, data["id"])
+        self.assertEqual(obj.created_at, date_parse(data["created_at"]))
         # check that it has **not** called the save method
         mock_save.assert_not_called()
 
         # check what happens if href is missing
-        obj = TestBaseModel(raw={})
+        obj = BaseModelInstance(raw={})
         self.assertRaises(KeyError, obj.pull)
 
         # check what happens if API fails
-        obj = TestBaseModel(raw={'href': '/'})
+        obj = BaseModelInstance(raw={"href": "/"})
         response = mock.Mock()
         response.json.return_value = {
             "error": {
                 "fields": {},
                 "message": "Authorization error: please re-check your credentials",
-                "type": "authorization_error"
+                "type": "authorization_error",
             }
         }
         mock_get.side_effect = ApiError(response)
         self.assertRaises(ApiError, obj.pull)
 
-    @mock.patch.object(BaseModel, 'save')
-    @mock.patch.object(BaseModel, 'fetch')
+    @mock.patch.object(BaseModel, "save")
+    @mock.patch.object(BaseModel, "fetch")
     def test_pull(self, mock_fetch, mock_save):
         """Test the pull method calls fetch and save."""
-        obj = TestBaseModel(raw={'href': '/'})
+        obj = BaseModelInstance(raw={"href": "/"})
         mock_fetch.return_value = obj
         obj.pull()
         # check that it has parsed the return value
@@ -125,21 +125,21 @@ class BaseQuerySetTests(TestCase):
 
     def create_applicant(self, username):
         """Create new Applicant and user."""
-        data = {'id': username, 'created_at': tz_now().isoformat()}
+        data = {"id": username, "created_at": tz_now().isoformat()}
         user = get_user_model().objects.create_user(username)
         applicant = Applicant.objects.create_applicant(user, raw=data)
         return applicant
 
-    @mock.patch.object(BaseModel, 'fetch')
+    @mock.patch.object(BaseModel, "fetch")
     def test_fetch(self, mock_fetch):
         """Test the queryset calls fetch on all objects."""
         # once applicant, one call
-        self.create_applicant('fred')
+        self.create_applicant("fred")
         Applicant.objects.all().fetch()
         mock_fetch.assert_called_once_with()
 
         # add another applicant, should now call twice
-        self.create_applicant('ginger')
+        self.create_applicant("ginger")
         mock_fetch.reset_mock()
         Applicant.objects.all().fetch()
         self.assertEqual(mock_fetch.call_count, 2)
@@ -149,16 +149,16 @@ class BaseQuerySetTests(TestCase):
         Applicant.objects.all().fetch()
         self.assertEqual(mock_fetch.call_count, 4)
 
-    @mock.patch.object(BaseModel, 'pull')
+    @mock.patch.object(BaseModel, "pull")
     def test_pull(self, mock_pull):
         """Test the queryset calls fetch on all objects."""
         # once applicant, one call
-        self.create_applicant('fred')
+        self.create_applicant("fred")
         Applicant.objects.all().pull()
         mock_pull.assert_called_once_with()
 
         # add another applicant, should now call twice
-        self.create_applicant('ginger')
+        self.create_applicant("ginger")
         mock_pull.reset_mock()
         Applicant.objects.all().pull()
         self.assertEqual(mock_pull.call_count, 2)
@@ -174,9 +174,9 @@ class BaseStatusModelTests(TestCase):
     """onfido.models.BaseStatusModel tests."""
 
     def test_defaults(self):
-        obj = TestBaseStatusModel()
+        obj = BaseStatusModelInstance()
         self.assertEqual(obj.id, None)
-        self.assertEqual(obj.onfido_id, '')
+        self.assertEqual(obj.onfido_id, "")
         self.assertEqual(obj.created_at, None)
         self.assertEqual(obj.status, None)
         self.assertEqual(obj.result, None)
@@ -192,16 +192,16 @@ class BaseStatusModelTests(TestCase):
             "type": "standard",
             "result": "clear",
         }
-        obj = TestBaseStatusModel().parse(data)
-        self.assertEqual(obj.onfido_id, data['id'])
-        self.assertEqual(obj.created_at, date_parse(data['created_at']))
-        self.assertEqual(obj.status, data['status'])
-        self.assertEqual(obj.result, data['result'])
+        obj = BaseStatusModelInstance().parse(data)
+        self.assertEqual(obj.onfido_id, data["id"])
+        self.assertEqual(obj.created_at, date_parse(data["created_at"]))
+        self.assertEqual(obj.status, data["status"])
+        self.assertEqual(obj.result, data["result"])
 
-    @mock.patch('onfido.signals.on_status_change.send')
-    @mock.patch('onfido.signals.on_completion.send')
-    @mock.patch.object(BaseStatusModel, 'pull')
-    @mock.patch.object(BaseStatusModel, 'save')
+    @mock.patch("onfido.signals.on_status_change.send")
+    @mock.patch("onfido.signals.on_completion.send")
+    @mock.patch.object(BaseStatusModel, "pull")
+    @mock.patch.object(BaseStatusModel, "save")
     def test_update_status(self, mock_save, mock_pull, mock_complete, mock_update):
         """Test the update_status method."""
         now = datetime.datetime.now()
@@ -212,23 +212,21 @@ class BaseStatusModelTests(TestCase):
             mock_complete.reset_mock()
             mock_update.reset_mock()
             event = Event(
-                action='form.opened',
-                status='after',
-                onfido_id='foo',
-                resource_type='check',
-                completed_at=now
+                action="form.opened",
+                status="after",
+                onfido_id="foo",
+                resource_type="check",
+                completed_at=now,
             )
-            obj = TestBaseStatusModel(
-                status='before'
-            )
-            assert obj.status == 'before'
+            obj = BaseStatusModelInstance(status="before")
+            assert obj.status == "before"
             assert obj.updated_at is None
             return event, obj
 
         # try passing in something that is not a datetime
         event, obj = reset()
         event.completed_at = None
-        self.assertRaises(AssertionError, obj.update_status, event)
+        self.assertRaises(ValueError, obj.update_status, event)
 
         event, obj = reset()
         event.completed_at = now
@@ -238,33 +236,30 @@ class BaseStatusModelTests(TestCase):
         mock_pull.assert_called_once_with()
         mock_save.assert_not_called()
         mock_update.assert_called_once_with(
-            TestBaseStatusModel,
+            BaseStatusModelInstance,
             instance=obj,
             event=event.action,
-            status_before='before',
-            status_after=event.status
+            status_before="before",
+            status_after=event.status,
         )
         mock_complete.assert_not_called()
 
         # if we send 'complete' as the status we should fire the second signal
         event, obj = reset()
-        event.status = 'complete'
+        event.status = "complete"
         obj = obj.update_status(event)
         self.assertEqual(obj.status, event.status)
         self.assertEqual(obj.updated_at, now)
         mock_pull.assert_called_once_with()
         mock_save.assert_not_called()
         mock_update.assert_called_once_with(
-            TestBaseStatusModel,
+            BaseStatusModelInstance,
             instance=obj,
             event=event.action,
-            status_before='before',
-            status_after=event.status
+            status_before="before",
+            status_after=event.status,
         )
-        mock_complete.assert_called_once_with(
-            TestBaseStatusModel,
-            instance=obj
-        )
+        mock_complete.assert_called_once_with(BaseStatusModelInstance, instance=obj)
 
         # test that we can handle the API failing on pull()
         event, obj = reset()
@@ -275,15 +270,15 @@ class BaseStatusModelTests(TestCase):
         mock_pull.assert_called_once_with()
         mock_save.assert_called_once_with()
         mock_update.assert_called_once_with(
-            TestBaseStatusModel,
+            BaseStatusModelInstance,
             instance=obj,
             event=event.action,
-            status_before='before',
-            status_after=event.status
+            status_before="before",
+            status_after=event.status,
         )
         mock_complete.assert_not_called()
 
-    @mock.patch('onfido.models.tz_now')
+    @mock.patch("onfido.models.tz_now")
     def test__override_event(self, mock_now):
         """Test the _override_event method."""
         now = datetime.datetime.now()
@@ -294,22 +289,19 @@ class BaseStatusModelTests(TestCase):
             "status": "awaiting_applicant",
             "type": "standard",
             "result": "clear",
-            "href": "http://foo"
+            "href": "http://foo",
         }
         user = get_user_model()()
-        obj = TestBaseStatusModel().parse(data)
+        obj = BaseStatusModelInstance().parse(data)
         event = obj._override_event(user)
         self.assertEqual(event.onfido_id, obj.onfido_id)
         self.assertEqual(event.action, "manual.override")
-        self.assertEqual(
-            event.resource_type,
-            TestBaseStatusModel._meta.model_name
-        )
+        self.assertEqual(event.resource_type, BaseStatusModelInstance._meta.model_name)
         self.assertEqual(event.status, obj.status)
         self.assertEqual(event.completed_at, now)
 
-    @mock.patch.object(Event, 'save')
-    @mock.patch.object(BaseStatusModel, 'save')
+    @mock.patch.object(Event, "save")
+    @mock.patch.object(BaseStatusModel, "save")
     def test_mark_as_clear(self, mock_save, mock_event_save):
         """Test the mark_as_clear method."""
         data = {
@@ -318,7 +310,7 @@ class BaseStatusModelTests(TestCase):
             "status": "awaiting_applicant",
             "type": "standard",
             "result": None,
-            "href": "http://foo"
+            "href": "http://foo",
         }
         user = get_user_model()()
         obj = Check().parse(data)
@@ -328,14 +320,13 @@ class BaseStatusModelTests(TestCase):
         mock_event_save.assert_called_once_with()
         self.assertTrue(obj.is_clear)
 
-    @mock.patch.object(query.QuerySet, 'filter')
+    @mock.patch.object(query.QuerySet, "filter")
     def test_events(self, mock_filter):
         """Test the events method."""
-        obj = TestBaseStatusModel(onfido_id='foo')
+        obj = BaseStatusModelInstance(onfido_id="foo")
         obj.events()
         mock_filter.assert_called_once_with(
-            onfido_id='foo',
-            resource_type='testbasestatusmodel'
+            onfido_id="foo", resource_type="basestatusmodelinstance"
         )
 
 
@@ -349,11 +340,8 @@ class ApplicantManagerTests(TestCase):
     }
 
     def setUp(self):
-        self.user = get_user_model().objects.create_user(
-            'fred',
-            first_name="œ∑´®†¥"
-        )
-        self.applicant = Applicant(onfido_id='foo', user=self.user)
+        self.user = get_user_model().objects.create_user("fred", first_name="œ∑´®†¥")
+        self.applicant = Applicant(onfido_id="foo", user=self.user)
 
     # @mock.patch.object(BaseModel, 'full_clean')
     def test_create_applicant(self):
@@ -362,8 +350,8 @@ class ApplicantManagerTests(TestCase):
         applicant = Applicant.objects.create_applicant(user=self.user, raw=data)
         self.assertEqual(applicant.user, self.user)
         self.assertEqual(applicant.raw, data)
-        self.assertEqual(applicant.onfido_id, data['id'])
-        self.assertEqual(applicant.created_at, date_parse(data['created_at']))
+        self.assertEqual(applicant.onfido_id, data["id"])
+        self.assertEqual(applicant.created_at, date_parse(data["created_at"]))
 
 
 class ApplicantTests(TestCase):
@@ -372,12 +360,12 @@ class ApplicantTests(TestCase):
 
     def setUp(self):
         self.user = get_user_model()(id=1, first_name="œ∑´®†¥")
-        self.applicant = Applicant(onfido_id='foo', user=self.user)
+        self.applicant = Applicant(onfido_id="foo", user=self.user)
 
     def test_defaults(self):
         """Test default property values."""
         applicant = self.applicant
-        self.assertEqual(applicant.onfido_id, 'foo')
+        self.assertEqual(applicant.onfido_id, "foo")
         self.assertEqual(applicant.user, self.user)
         self.assertEqual(applicant.created_at, None)
 
@@ -385,7 +373,7 @@ class ApplicantTests(TestCase):
         """Test the save method."""
         self.user.save()
         applicant = self.applicant.save()
-        self.assertEqual(applicant.onfido_id, 'foo')
+        self.assertEqual(applicant.onfido_id, "foo")
         self.assertEqual(applicant.user, self.user)
         self.assertEqual(applicant.created_at, None)
         # test the related_name
@@ -415,21 +403,19 @@ class ApplicantTests(TestCase):
                 "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
                 "created_at": "2016-10-15T19:05:50Z",
                 "href": "/",
-            }
+            },
         )
+
 
 class CheckManagerTests(TestCase):
 
     """onfido.models.ApplicantManager tests."""
 
-    @mock.patch.object(BaseModel, 'full_clean')
+    @mock.patch.object(BaseModel, "full_clean")
     def test_create_check(self, mock_clean):
         """Test the create method parses response."""
-        user = get_user_model().objects.create_user(
-            username='baz',
-            first_name="œ∑´®†¥"
-        )
-        applicant = Applicant(onfido_id='foo', user=user).save()
+        user = get_user_model().objects.create_user(username="baz", first_name="œ∑´®†¥")
+        applicant = Applicant(onfido_id="foo", user=user).save()
         data = {
             "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
             "created_at": "2016-10-15T19:05:50Z",
@@ -437,17 +423,14 @@ class CheckManagerTests(TestCase):
             "type": "standard",
             "result": "clear",
         }
-        check = Check.objects.create_check(
-            applicant=applicant,
-            raw=data
-        )
+        check = Check.objects.create_check(applicant=applicant, raw=data)
         self.assertEqual(check.user, user)
         self.assertEqual(check.applicant, applicant)
-        self.assertEqual(check.onfido_id, data['id'])
-        self.assertEqual(check.check_type, data['type'])
-        self.assertEqual(check.status, data['status'])
-        self.assertEqual(check.result, data['result'])
-        self.assertEqual(check.created_at, date_parse(data['created_at']))
+        self.assertEqual(check.onfido_id, data["id"])
+        self.assertEqual(check.check_type, data["type"])
+        self.assertEqual(check.status, data["status"])
+        self.assertEqual(check.result, data["result"])
+        self.assertEqual(check.created_at, date_parse(data["created_at"]))
 
 
 class CheckTests(TestCase):
@@ -456,35 +439,33 @@ class CheckTests(TestCase):
 
     def setUp(self):
         self.user = get_user_model().objects.create_user(
-            username='fred',
-            first_name="œ∑´®†¥"
+            username="fred", first_name="œ∑´®†¥"
         )
-        self.applicant = Applicant(
-            onfido_id='foo',
-            user=self.user
-        ).save()
+        self.applicant = Applicant(onfido_id="foo", user=self.user).save()
         self.check = Check(
-            onfido_id='bar', user=self.user,
-            applicant=self.applicant, check_type='standard'
+            onfido_id="bar",
+            user=self.user,
+            applicant=self.applicant,
+            check_type="standard",
         ).save()
 
     def test_defaults(self):
         """Test default property values."""
         check = Check()
-        self.assertEqual(check.onfido_id, '')
+        self.assertEqual(check.onfido_id, "")
         self.assertEqual(check.created_at, None)
         self.assertEqual(check.status, None)
         self.assertEqual(check.result, None)
-        self.assertEqual(check.check_type, '')
+        self.assertEqual(check.check_type, "")
 
     def test_save(self):
         """Test save method."""
         check = self.check
-        self.assertEqual(check.onfido_id, 'bar')
+        self.assertEqual(check.onfido_id, "bar")
         self.assertEqual(check.created_at, None)
         self.assertEqual(check.status, None)
         self.assertEqual(check.result, None)
-        self.assertEqual(check.check_type, 'standard')
+        self.assertEqual(check.check_type, "standard")
         # test the related_names
         self.assertEqual(self.applicant.checks.get(), check)
         self.assertEqual(self.user.onfido_checks.get(), check)
@@ -506,11 +487,8 @@ class CheckTests(TestCase):
         }
         check = Check().parse(data)
         # real data taken from check.json
-        self.assertEqual(
-            check.onfido_id,
-            "c26f22d5-4903-401f-8a48-7b0211d03c1f"
-        )
-        self.assertEqual(check.created_at, date_parse(data['created_at']))
+        self.assertEqual(check.onfido_id, "c26f22d5-4903-401f-8a48-7b0211d03c1f")
+        self.assertEqual(check.created_at, date_parse(data["created_at"]))
         self.assertEqual(check.status, "awaiting_applicant")
         self.assertEqual(check.result, "clear")
 
@@ -525,40 +503,33 @@ class ReportManagerTests(TestCase):
         "name": "identity",
         "result": "clear",
         "status": "awaiting_data",
-        "variant": "standard"
+        "variant": "standard",
     }
 
     def setUp(self):
         self.user = get_user_model().objects.create_user(
-            username="foo",
-            first_name="œ∑´®†¥"
+            username="foo", first_name="œ∑´®†¥"
         )
-        self.applicant = Applicant(
-            user=self.user,
-            onfido_id='foo',
-        ).save()
+        self.applicant = Applicant(user=self.user, onfido_id="foo",).save()
         self.check = Check(
             user=self.user,
             applicant=self.applicant,
-            check_type='standard',
-            onfido_id='bar'
+            check_type="standard",
+            onfido_id="bar",
         ).save()
 
-    @mock.patch.object(BaseModel, 'full_clean')
+    @mock.patch.object(BaseModel, "full_clean")
     def test_create_report(self, mock_clean):
         """Test the create method parses response."""
         data = ReportManagerTests.TEST_DATA
-        report = Report.objects.create_report(
-            check=self.check,
-            raw=data
-        )
+        report = Report.objects.create_report(check=self.check, raw=data)
         self.assertEqual(report.user, self.user)
         self.assertEqual(report.onfido_check, self.check)
-        self.assertEqual(report.onfido_id, data['id'])
-        self.assertEqual(report.report_type, data['name'])
-        self.assertEqual(report.status, data['status'])
-        self.assertEqual(report.result, data['result'])
-        self.assertEqual(report.created_at, date_parse(data['created_at']))
+        self.assertEqual(report.onfido_id, data["id"])
+        self.assertEqual(report.report_type, data["name"])
+        self.assertEqual(report.status, data["status"])
+        self.assertEqual(report.result, data["result"])
+        self.assertEqual(report.created_at, date_parse(data["created_at"]))
 
 
 class ReportTests(TestCase):
@@ -567,45 +538,43 @@ class ReportTests(TestCase):
 
     def setUp(self):
         self.user = get_user_model().objects.create_user(
-            username="foo",
-            first_name="œ∑´®†¥"
+            username="foo", first_name="œ∑´®†¥"
         )
-        self.applicant = Applicant(
-            onfido_id='foo',
-            user=self.user
-        ).save()
+        self.applicant = Applicant(onfido_id="foo", user=self.user).save()
         self.check = Check(
-            onfido_id='bar',
+            onfido_id="bar",
             user=self.user,
             applicant=self.applicant,
-            check_type='standard'
+            check_type="standard",
         ).save()
         self.report = Report(
-            user=self.user, onfido_id='foo',
-            onfido_check=self.check, report_type='identity'
+            user=self.user,
+            onfido_id="foo",
+            onfido_check=self.check,
+            report_type="identity",
         )
 
     def test_defaults(self):
         """Test default property values."""
         report = self.report
-        self.assertEqual(report.onfido_id, 'foo')
+        self.assertEqual(report.onfido_id, "foo")
         self.assertEqual(report.created_at, None)
         self.assertEqual(report.status, None)
         self.assertEqual(report.result, None)
         self.assertEqual(report.user, self.user)
         self.assertEqual(report.onfido_check, self.check)
-        self.assertEqual(report.report_type, 'identity')
+        self.assertEqual(report.report_type, "identity")
 
     def test_save(self):
         """Test save method."""
         report = self.report.save()
-        self.assertEqual(report.onfido_id, 'foo')
+        self.assertEqual(report.onfido_id, "foo")
         self.assertEqual(report.created_at, None)
         self.assertEqual(report.status, None)
         self.assertEqual(report.result, None)
         self.assertEqual(report.user, self.user)
         self.assertEqual(report.onfido_check, self.check)
-        self.assertEqual(report.report_type, 'identity')
+        self.assertEqual(report.report_type, "identity")
         # test the related_names
         self.assertEqual(self.check.reports.get(), report)
         self.assertEqual(self.user.onfido_reports.get(), report)
@@ -627,11 +596,8 @@ class ReportTests(TestCase):
         }
         report = Report().parse(data)
         # real data taken from check.json
-        self.assertEqual(
-            report.onfido_id,
-            "c26f22d5-4903-401f-8a48-7b0211d03c1f"
-        )
-        self.assertEqual(report.created_at, date_parse(data['created_at']))
+        self.assertEqual(report.onfido_id, "c26f22d5-4903-401f-8a48-7b0211d03c1f")
+        self.assertEqual(report.created_at, date_parse(data["created_at"]))
         self.assertEqual(report.status, "awaiting_applicant")
         self.assertEqual(report.result, "clear")
         self.assertEqual(report.report_type, "identity")
@@ -645,12 +611,12 @@ class ReportTests(TestCase):
             "result": "clear",
             "name": "identity",
             "breakdown": {},
-            "properties": {}
+            "properties": {},
         }
         report = Report().parse(data)
         # the default report scrubber should have removed data:
-        self.assertFalse('breakdown' in report.raw)
-        self.assertFalse('properties' in report.raw)
+        self.assertFalse("breakdown" in report.raw)
+        self.assertFalse("properties" in report.raw)
 
 
 class EventTests(TestCase):
@@ -665,47 +631,43 @@ class EventTests(TestCase):
                 "id": "6d7ee353-db1e-4b45-9034-f7e75198cbe0",
                 "status": "awaiting_applicant",
                 "completed_at": "2016-10-23 12:52:33 UTC",
-                "href": "https://api.onfido.com/v1/applicants/xxx"
-            }
+                "href": "https://api.onfido.com/v1/applicants/xxx",
+            },
         }
     }
 
     def setUp(self):
         self.user = get_user_model().objects.create_user(
-            username="foo",
-            first_name="œ∑´®†¥"
+            username="foo", first_name="œ∑´®†¥"
         )
-        self.applicant = Applicant(
-            onfido_id='foo',
-            user=self.user
-        ).save()
+        self.applicant = Applicant(onfido_id="foo", user=self.user).save()
         self.check = Check(
-            onfido_id='bar',
+            onfido_id="bar",
             user=self.user,
             applicant=self.applicant,
-            check_type='standard'
+            check_type="standard",
         ).save()
 
     def test__resource_manager(self):
         """Test the _resource_manager method."""
         event = Event()
-        self.assertRaises(AssertionError, event._resource_manager)
-        event.resource_type = 'foo'
-        self.assertRaises(AssertionError, event._resource_manager)
+        self.assertRaises(ValueError, event._resource_manager)
+        event.resource_type = "foo"
+        self.assertRaises(ValueError, event._resource_manager)
 
-        event.resource_type = 'check'
+        event.resource_type = "check"
         self.assertEqual(event._resource_manager(), Check.objects)
-        event.resource_type = 'report'
+        event.resource_type = "report"
         self.assertEqual(event._resource_manager(), Report.objects)
 
-    @mock.patch.object(CheckQuerySet, 'get')
+    @mock.patch.object(CheckQuerySet, "get")
     def test_resource(self, mock_get):
         """Test the resource property."""
         event = Event().parse(EventTests.TEST_DATA)
         event.resource
         mock_get.assert_called_once_with(onfido_id=event.onfido_id)
 
-    @mock.patch.object(CheckQuerySet, 'get')
+    @mock.patch.object(CheckQuerySet, "get")
     def test_user(self, mock_get):
         """Test the resource property."""
         event = Event().parse(EventTests.TEST_DATA)
@@ -716,10 +678,10 @@ class EventTests(TestCase):
         """Test default property values."""
         event = Event()
         # real data taken from check.json
-        self.assertEqual(event.resource_type, '')
-        self.assertEqual(event.onfido_id, '')
-        self.assertEqual(event.action, '')
-        self.assertEqual(event.status, '')
+        self.assertEqual(event.resource_type, "")
+        self.assertEqual(event.onfido_id, "")
+        self.assertEqual(event.action, "")
+        self.assertEqual(event.status, "")
         self.assertEqual(event.completed_at, None)
         self.assertEqual(event.raw, None)
 
@@ -728,13 +690,12 @@ class EventTests(TestCase):
         data = EventTests.TEST_DATA
         event = Event(received_at=tz_now()).parse(data).save()
         # real data taken from check.json
-        self.assertEqual(event.resource_type, data['payload']['resource_type'])
-        self.assertEqual(event.onfido_id, data['payload']['object']['id'])
-        self.assertEqual(event.action, data['payload']['action'])
-        self.assertEqual(event.status, data['payload']['object']['status'])
+        self.assertEqual(event.resource_type, data["payload"]["resource_type"])
+        self.assertEqual(event.onfido_id, data["payload"]["object"]["id"])
+        self.assertEqual(event.action, data["payload"]["action"])
+        self.assertEqual(event.status, data["payload"]["object"]["status"])
         self.assertEqual(
-            event.completed_at,
-            date_parse(data['payload']['object']['completed_at'])
+            event.completed_at, date_parse(data["payload"]["object"]["completed_at"])
         )
         self.assertEqual(event.raw, data)
 
@@ -749,12 +710,11 @@ class EventTests(TestCase):
         data = EventTests.TEST_DATA
         event = Event().parse(data)
         # real data taken from check.json
-        self.assertEqual(event.resource_type, data['payload']['resource_type'])
-        self.assertEqual(event.onfido_id, data['payload']['object']['id'])
-        self.assertEqual(event.action, data['payload']['action'])
-        self.assertEqual(event.status, data['payload']['object']['status'])
+        self.assertEqual(event.resource_type, data["payload"]["resource_type"])
+        self.assertEqual(event.onfido_id, data["payload"]["object"]["id"])
+        self.assertEqual(event.action, data["payload"]["action"])
+        self.assertEqual(event.status, data["payload"]["object"]["status"])
         self.assertEqual(
-            event.completed_at,
-            date_parse(data['payload']['object']['completed_at'])
+            event.completed_at, date_parse(data["payload"]["object"]["completed_at"])
         )
         self.assertEqual(event.raw, data)

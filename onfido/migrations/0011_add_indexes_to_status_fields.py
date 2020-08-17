@@ -8,18 +8,78 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('onfido', '0010_convert_raw_fields_to_jsonb'),
+        ("onfido", "0010_convert_raw_fields_to_jsonb"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='check',
-            name='status',
-            field=models.CharField(blank=True, choices=[('Check', (('in_progress', 'In progress'), ('awaiting_applicant', 'Awaiting applicant'), ('complete', 'Complete'), ('withdrawn', 'Withdrawn'), ('paused', 'Paused'), ('reopened', 'Reopened'))), ('Report', (('awaiting_data', 'Awaiting data'), ('awaiting_approval', 'Awaiting approval'), ('complete', 'Complete'), ('withdrawn', 'Withdrawn'), ('paused', 'Paused'), ('cancelled', 'Cancelled')))], db_index=True, help_text='The current state of the check / report (from API).', max_length=20, null=True),
+            model_name="check",
+            name="status",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    (
+                        "Check",
+                        (
+                            ("in_progress", "In progress"),
+                            ("awaiting_applicant", "Awaiting applicant"),
+                            ("complete", "Complete"),
+                            ("withdrawn", "Withdrawn"),
+                            ("paused", "Paused"),
+                            ("reopened", "Reopened"),
+                        ),
+                    ),
+                    (
+                        "Report",
+                        (
+                            ("awaiting_data", "Awaiting data"),
+                            ("awaiting_approval", "Awaiting approval"),
+                            ("complete", "Complete"),
+                            ("withdrawn", "Withdrawn"),
+                            ("paused", "Paused"),
+                            ("cancelled", "Cancelled"),
+                        ),
+                    ),
+                ],
+                db_index=True,
+                help_text="The current state of the check / report (from API).",
+                max_length=20,
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='report',
-            name='status',
-            field=models.CharField(blank=True, choices=[('Check', (('in_progress', 'In progress'), ('awaiting_applicant', 'Awaiting applicant'), ('complete', 'Complete'), ('withdrawn', 'Withdrawn'), ('paused', 'Paused'), ('reopened', 'Reopened'))), ('Report', (('awaiting_data', 'Awaiting data'), ('awaiting_approval', 'Awaiting approval'), ('complete', 'Complete'), ('withdrawn', 'Withdrawn'), ('paused', 'Paused'), ('cancelled', 'Cancelled')))], db_index=True, help_text='The current state of the check / report (from API).', max_length=20, null=True),
+            model_name="report",
+            name="status",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    (
+                        "Check",
+                        (
+                            ("in_progress", "In progress"),
+                            ("awaiting_applicant", "Awaiting applicant"),
+                            ("complete", "Complete"),
+                            ("withdrawn", "Withdrawn"),
+                            ("paused", "Paused"),
+                            ("reopened", "Reopened"),
+                        ),
+                    ),
+                    (
+                        "Report",
+                        (
+                            ("awaiting_data", "Awaiting data"),
+                            ("awaiting_approval", "Awaiting approval"),
+                            ("complete", "Complete"),
+                            ("withdrawn", "Withdrawn"),
+                            ("paused", "Paused"),
+                            ("cancelled", "Cancelled"),
+                        ),
+                    ),
+                ],
+                db_index=True,
+                help_text="The current state of the check / report (from API).",
+                max_length=20,
+                null=True,
+            ),
         ),
     ]

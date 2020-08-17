@@ -5,15 +5,13 @@ from dateutil.parser import parse as date_parse
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from ..helpers import (
-    create_applicant,
-    create_check,
-    # import from helpers to deter possible dependency issues
+from onfido.helpers import (  # import from helpers to deter possible dependency issues
     Applicant,
     Check,
-    Report
+    Report,
+    create_applicant,
+    create_check,
 )
-
 
 CREATE_APPLICANT_RETURN = {
     "id": "a9acefdf-3dc5-4973-aa78-20bd36825b50",
@@ -30,60 +28,55 @@ class HelperTests(TestCase):
 
     """onfido.helper module tests."""
 
-    @mock.patch('onfido.helpers.post')
+    @mock.patch("onfido.helpers.post")
     def test_create_applicant(self, mock_post):
         """Test the create_applicant function."""
         data = deepcopy(CREATE_APPLICANT_RETURN)
         mock_post.return_value = data
         user = get_user_model().objects.create_user(
-            username='fred',
-            first_name='Fred',
-            last_name='Flintstone',
-            email='fred@flintstone.com'
+            username="fred",
+            first_name="Fred",
+            last_name="Flintstone",
+            email="fred@flintstone.com",
         )
         applicant = create_applicant(user)
         mock_post.assert_called_once_with(
-            'applicants',
+            "applicants",
             {
-                'first_name': 'Fred',
-                'last_name': 'Flintstone',
-                'email': 'fred@flintstone.com',
-            }
+                "first_name": "Fred",
+                "last_name": "Flintstone",
+                "email": "fred@flintstone.com",
+            },
         )
-        self.assertEqual(applicant.onfido_id, data['id'])
+        self.assertEqual(applicant.onfido_id, data["id"])
         self.assertEqual(applicant.user, user)
-        self.assertEqual(applicant.created_at, date_parse(data['created_at']))
+        self.assertEqual(applicant.created_at, date_parse(data["created_at"]))
 
-    @mock.patch('onfido.helpers.post')
+    @mock.patch("onfido.helpers.post")
     def test_create_applicant_with_custom_data(self, mock_post):
         """Test the create_applicant function with extra custom POST data."""
         data = deepcopy(CREATE_APPLICANT_RETURN)
         mock_post.return_value = data
         user = get_user_model().objects.create_user(
-            username='fred',
-            first_name='Fred',
-            last_name='Flintstone',
-            email='fred@flintstone.com'
+            username="fred",
+            first_name="Fred",
+            last_name="Flintstone",
+            email="fred@flintstone.com",
         )
-        create_applicant(
-            user,
-            country='GBR',
-            dob='2016-01-01',
-            gender='male'
-        )
+        create_applicant(user, country="GBR", dob="2016-01-01", gender="male")
         mock_post.assert_called_once_with(
-            'applicants',
+            "applicants",
             {
-                'first_name': 'Fred',
-                'last_name': 'Flintstone',
-                'email': 'fred@flintstone.com',
-                'gender': 'male',
-                'dob': '2016-01-01',
-                'country': 'GBR',
-            }
+                "first_name": "Fred",
+                "last_name": "Flintstone",
+                "email": "fred@flintstone.com",
+                "gender": "male",
+                "dob": "2016-01-01",
+                "country": "GBR",
+            },
         )
 
-    @mock.patch('onfido.helpers.post')
+    @mock.patch("onfido.helpers.post")
     def test_create_check(self, mock_post):
         """Test the create_check function."""
         applicant_data = deepcopy(CREATE_APPLICANT_RETURN)
@@ -111,43 +104,46 @@ class HelperTests(TestCase):
                     "result": None,
                     "status": "awaiting_data",
                     "variant": "standard",
-                }
+                },
             ],
         }
         mock_post.return_value = check_data
         user = get_user_model().objects.create_user(
-            username='fred',
-            first_name='Fred',
-            last_name='Flintstone',
-            email='fred@flintstone.com'
+            username="fred",
+            first_name="Fred",
+            last_name="Flintstone",
+            email="fred@flintstone.com",
         )
         applicant = Applicant.objects.create_applicant(user, applicant_data)
 
         # 1. use the defaults.
-        check = create_check(applicant, 'standard', ('identity', 'document'))
+        check = create_check(applicant, "standard", ("identity", "document"))
         mock_post.assert_called_once_with(
-            'applicants/a9acefdf-3dc5-4973-aa78-20bd36825b50/checks',
-            {'reports': [{'name': 'identity'}, {'name': 'document'}], 'type': 'standard'}
+            "applicants/a9acefdf-3dc5-4973-aa78-20bd36825b50/checks",
+            {
+                "reports": [{"name": "identity"}, {"name": "document"}],
+                "type": "standard",
+            },
         )
         self.assertEqual(Check.objects.get(), check)
         # check we have two reports, and that the raw field matches the JSON
         # and that the parse method has run
         self.assertEqual(Report.objects.count(), 2)
-        for r in check_data['reports']:
+        for r in check_data["reports"]:
             # this will only work if the JSON has been parsed correctly
-            report = Report.objects.get(onfido_id=r['id'])
+            report = Report.objects.get(onfido_id=r["id"])
             self.assertEqual(report.raw, r)
 
         # confirm that asserts guard input
-        self.assertRaises(AssertionError, create_check, applicant, 'express', ('identity'))
-        self.assertRaises(AssertionError, create_check, applicant, 'standard', 'identity')
-        self.assertRaises(AssertionError, create_check, applicant, 'standard', None)
+        self.assertRaises(ValueError, create_check, applicant, "express", ("identity"))
+        self.assertRaises(ValueError, create_check, applicant, "standard", "identity")
+        self.assertRaises(ValueError, create_check, applicant, "standard", None)
 
         # confirm that kwargs are merged in correctly
         check.delete()
         mock_post.reset_mock()
-        check = create_check(applicant, 'standard', ('identity',), foo='bar')
+        check = create_check(applicant, "standard", ("identity",), foo="bar")
         mock_post.assert_called_once_with(
-            'applicants/a9acefdf-3dc5-4973-aa78-20bd36825b50/checks',
-            {'reports': [{'name': 'identity'}], 'type': 'standard', 'foo': 'bar'}
+            "applicants/a9acefdf-3dc5-4973-aa78-20bd36825b50/checks",
+            {"reports": [{"name": "identity"}], "type": "standard", "foo": "bar"},
         )

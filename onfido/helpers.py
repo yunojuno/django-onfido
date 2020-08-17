@@ -1,13 +1,16 @@
+from __future__ import annotations
+
+from typing import Any, Iterable
+
+from django.conf import settings
+
 from .api import post
-from .models import (
-    Applicant,
-    Check,
-    Report
-)
+from .models import Applicant, Check, Report
 
 
-def create_applicant(user, **kwargs):
-    """Create an applicant in the Onfido system.
+def create_applicant(user: settings.AUTH_USER_MODEL, **kwargs: Any) -> Applicant:
+    """
+    Create an applicant in the Onfido system.
 
     Args:
         user: a Django User instance to register as an applicant.
@@ -20,14 +23,16 @@ def create_applicant(user, **kwargs):
     data = {
         "first_name": user.first_name,
         "last_name": user.last_name,
-        "email": user.email
+        "email": user.email,
     }
     data.update(kwargs)
-    response = post('applicants', data)
+    response = post("applicants", data)
     return Applicant.objects.create_applicant(user, response)
 
 
-def create_check(applicant, check_type, reports, **kwargs):
+def create_check(
+    applicant: Applicant, check_type: str, reports: Iterable, **kwargs: Any
+) -> Check:
     """
     Create a new Check (and child Reports).
 
@@ -45,22 +50,23 @@ def create_check(applicant, check_type, reports, **kwargs):
     Returns a new Check object, and creates the child Report objects.
 
     """
-    assert check_type == 'standard', (
-        "Invalid check_type '{}', currently only 'standard' "
-        "checks are supported.".format(check_type)
-    )
-    assert isinstance(reports, (list, tuple)), (
-        "Invalid reports arg '{}', must be a list or tuple "
-        "if supplied.".format(reports)
-    )
+    if check_type != "standard":
+        raise ValueError(
+            f"Invalid check_type '{check_type}', currently only 'standard' "
+            "checks are supported."
+        )
+    if not isinstance(reports, (list, tuple)):
+        raise ValueError(
+            f"Invalid reports arg '{reports}', must be a list or tuple " "if supplied."
+        )
     data = {
         "type": check_type,
-        "reports": [{'name': r} for r in reports],
+        "reports": [{"name": r} for r in reports],
     }
     # merge in the additional kwargs
     data.update(kwargs)
-    response = post('applicants/{}/checks'.format(applicant.onfido_id), data)
+    response = post("applicants/{}/checks".format(applicant.onfido_id), data)
     check = Check.objects.create_check(applicant=applicant, raw=response)
-    for report in response['reports']:
+    for report in response["reports"]:
         Report.objects.create_report(check=check, raw=report)
     return check

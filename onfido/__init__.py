@@ -1,1 +1,1 @@
-default_app_config = 'onfido.apps.OnfidoAppConfig'
+default_app_config = "onfido.apps.OnfidoAppConfig"

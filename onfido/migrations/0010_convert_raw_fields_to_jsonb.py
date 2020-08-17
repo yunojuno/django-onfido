@@ -3,37 +3,47 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
-from django.contrib.postgres.fields import JSONField
+
+from ..compat import JSONField
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('onfido', '0009_add_is_clear_field'),
+        ("onfido", "0009_add_is_clear_field"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='applicant',
-            name='raw',
-            field=JSONField(blank=True, help_text='The raw JSON returned from the API.', null=True),
+            model_name="applicant",
+            name="raw",
+            field=JSONField(
+                blank=True, help_text="The raw JSON returned from the API.", null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='check',
-            name='raw',
-            field=JSONField(blank=True, help_text='The raw JSON returned from the API.', null=True),
+            model_name="check",
+            name="raw",
+            field=JSONField(
+                blank=True, help_text="The raw JSON returned from the API.", null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='report',
-            name='raw',
-            field=JSONField(blank=True, help_text='The raw JSON returned from the API.', null=True),
+            model_name="report",
+            name="raw",
+            field=JSONField(
+                blank=True, help_text="The raw JSON returned from the API.", null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='event',
-            name='raw',
-            field=JSONField(blank=True, help_text='The raw JSON returned from the API.', null=True),
+            model_name="event",
+            name="raw",
+            field=JSONField(
+                blank=True, help_text="The raw JSON returned from the API.", null=True
+            ),
         ),
     ]
+
 
 # Below is an example of a full parallel conversion that creates a new field
 # copies across the data from the old field, drops the old field and renames
@@ -111,4 +121,3 @@ class Migration(migrations.Migration):
 #         migrations.RenameField(model_name='report', old_name='new_raw', new_name='raw'),
 #         migrations.RenameField(model_name='event', old_name='new_raw', new_name='raw'),
 #     ]
-

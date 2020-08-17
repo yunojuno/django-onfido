@@ -1,18 +1,20 @@
-from functools import wraps
+from __future__ import annotations
+
 import hashlib
 import hmac
 import logging
+from functools import wraps
+from typing import Any, Callable
 
 from django.core.exceptions import ImproperlyConfigured
-from django.http import HttpResponseForbidden
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 
-from .settings import WEBHOOK_TOKEN, TEST_MODE
-
+from .settings import TEST_MODE, WEBHOOK_TOKEN
 
 logger = logging.getLogger(__name__)
 
 
-def _hmac(token, text):
+def _hmac(token: bytes, text: bytes) -> str:
     """
     Calculate SHA1 HMAC digest from request body and token.
 
@@ -28,7 +30,7 @@ def _hmac(token, text):
     return auth_code
 
 
-def _match(token, request):
+def _match(token: bytes, request: HttpRequest) -> bool:
     """
     Calculate signature and return True if it matches header.
 
@@ -41,19 +43,21 @@ def _match(token, request):
 
     """
     try:
-        signature = request.META['HTTP_X_SIGNATURE']
+        signature = request.META["HTTP_X_SIGNATURE"]
         logger.debug("Onfido callback X-Signature: %s", signature)
         logger.debug("Onfido callback request body: %s", request.body)
         return _hmac(token, request.body) == signature
     except KeyError:
-        logger.warn("Onfido callback missing X-Signature - this may be an unauthorised request.")
+        logger.warning(
+            "Onfido callback missing X-Signature - this may be an unauthorised request."
+        )
         return False
     except Exception:
         logger.exception("Error attempting to decode Onfido signature.")
         return False
 
 
-def verify_signature():
+def verify_signature() -> Callable:
     """
     View function decorator used to verify Onfido webhook signatures.
 
@@ -81,11 +85,16 @@ def verify_signature():
     If the HMAC signatures don't match, return a 403
 
     """
-    def decorator(func):
+
+    def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def _wrapped_func(request, *args, **kwargs):
+        def _wrapped_func(
+            request: HttpRequest, *args: Any, **kwargs: Any
+        ) -> HttpResponse:
             if TEST_MODE:
-                logger.debug("Ignoring Onfido callback verification (ONFIDO_TEST_MODE enabled)")
+                logger.debug(
+                    "Ignoring Onfido callback verification (ONFIDO_TEST_MODE enabled)"
+                )
                 return func(request, *args, **kwargs)
             if not WEBHOOK_TOKEN:
                 raise ImproperlyConfigured("Missing ONFIDO_WEBHOOK_TOKEN")
@@ -95,7 +104,9 @@ def verify_signature():
                 # logging as a warning means it'll likely appear in logs,
                 # but it's by design - if people are sending invalid requests
                 # we need to know.
-                logger.warn("Onfido callback request verification failed.")
+                logger.warning("Onfido callback request verification failed.")
                 return HttpResponseForbidden("Invalid X-Signature")
+
         return _wrapped_func
+
     return decorator

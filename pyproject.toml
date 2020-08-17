@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "django-onfido"
+version = "0.13"
+description = "Django app for integration with Onfido."
+license = "MIT"
+authors = ["YunoJuno <code@yunojuno.com>"]
+maintainers = ["YunoJuno <code@yunojuno.com>"]
+readme = "README.rst"
+homepage = "https://github.com/yunojuno/django-onfido"
+repository = "https://github.com/yunojuno/django-onfido"
+documentation = "https://github.com/yunojuno/django-onfido"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 2.2",
+    "Framework :: Django :: 3.0",
+    "Framework :: Django :: 3.1",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+]
+packages = [
+    { include = "onfido" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+django = "^2.2 || ^3.0"
+python-dateutil = "*"
+requests =  "*"
+simplejson = "*"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+pytest-cov = "*"
+pytest-django = "*"
+coverage = "*"
+pylint = "*"
+flake8 = "*"
+flake8-bandit = "*"
+flake8-docstrings = "*"
+isort = "*"
+mypy = "*"
+pre-commit = "*"
+black = "=19.10b0"
+freezegun = "*"
+tox = "*"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
