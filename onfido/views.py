@@ -44,8 +44,8 @@ def status_update(request: HttpRequest) -> HttpResponse:
     received_at = now()
     logger.debug("Received Onfido callback: {}".format(request.body))
     data = json.loads(request.body)
+    event = Event(received_at=received_at)
     try:
-        event = Event(received_at=received_at)
         resource = event.parse(data).resource
         resource.update_status(event)
         if LOG_EVENTS:
@@ -54,7 +54,7 @@ def status_update(request: HttpRequest) -> HttpResponse:
     except KeyError as ex:
         logger.warning("Missing Onfido event content: %s", ex)
         return HttpResponse("Unexpected event content.")
-    except AssertionError:
+    except ValueError:
         logger.warning("Unknown Onfido resource type: %s", event.resource_type)
         return HttpResponse("Unknown resource type.")
     except Check.DoesNotExist:

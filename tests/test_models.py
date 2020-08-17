@@ -226,7 +226,7 @@ class BaseStatusModelTests(TestCase):
         # try passing in something that is not a datetime
         event, obj = reset()
         event.completed_at = None
-        self.assertRaises(AssertionError, obj.update_status, event)
+        self.assertRaises(ValueError, obj.update_status, event)
 
         event, obj = reset()
         event.completed_at = now
@@ -651,9 +651,9 @@ class EventTests(TestCase):
     def test__resource_manager(self):
         """Test the _resource_manager method."""
         event = Event()
-        self.assertRaises(AssertionError, event._resource_manager)
+        self.assertRaises(ValueError, event._resource_manager)
         event.resource_type = "foo"
-        self.assertRaises(AssertionError, event._resource_manager)
+        self.assertRaises(ValueError, event._resource_manager)
 
         event.resource_type = "check"
         self.assertEqual(event._resource_manager(), Check.objects)

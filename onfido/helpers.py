@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
-from django.contrib.auth.models import BaseUser
+from django.conf import settings
 
 from .api import post
 from .models import Applicant, Check, Report
 
 
-def create_applicant(user: BaseUser, **kwargs: Any) -> Applicant:
+def create_applicant(user: settings.AUTH_USER_MODEL, **kwargs: Any) -> Applicant:
     """
     Create an applicant in the Onfido system.
 

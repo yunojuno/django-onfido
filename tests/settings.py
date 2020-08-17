@@ -17,6 +17,7 @@ try:
         "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": "test.db",}
     }
 except ImportError:
+    print("DJANGO_VERSION", DJANGO_VERSION)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",

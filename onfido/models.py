@@ -6,12 +6,12 @@ from typing import Any
 
 from dateutil.parser import parse as date_parse
 from django.conf import settings
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.timezone import now as tz_now
 from django.utils.translation import ugettext_lazy as _
 
 from .api import get
+from .compat import JSONField
 from .settings import scrub_applicant_data, scrub_report_data
 from .signals import on_completion, on_status_change
 

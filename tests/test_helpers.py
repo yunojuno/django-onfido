@@ -135,13 +135,9 @@ class HelperTests(TestCase):
             self.assertEqual(report.raw, r)
 
         # confirm that asserts guard input
-        self.assertRaises(
-            AssertionError, create_check, applicant, "express", ("identity")
-        )
-        self.assertRaises(
-            AssertionError, create_check, applicant, "standard", "identity"
-        )
-        self.assertRaises(AssertionError, create_check, applicant, "standard", None)
+        self.assertRaises(ValueError, create_check, applicant, "express", ("identity"))
+        self.assertRaises(ValueError, create_check, applicant, "standard", "identity")
+        self.assertRaises(ValueError, create_check, applicant, "standard", None)
 
         # confirm that kwargs are merged in correctly
         check.delete()
