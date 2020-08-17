@@ -15,25 +15,25 @@ def set_event_received_at(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('onfido', '0011_add_indexes_to_status_fields'),
+        ("onfido", "0011_add_indexes_to_status_fields"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='event',
-            name='received_at',
+            model_name="event",
+            name="received_at",
             field=models.DateTimeField(
                 blank=True,
                 null=True,
-                help_text='The timestamp when the server received the event.',
+                help_text="The timestamp when the server received the event.",
             ),
         ),
         migrations.RunPython(set_event_received_at),
         migrations.AlterField(
-            model_name='event',
-            name='received_at',
+            model_name="event",
+            name="received_at",
             field=models.DateTimeField(
-                help_text='The timestamp when the server received the event.'
-            )
+                help_text="The timestamp when the server received the event."
+            ),
         ),
     ]

@@ -2,17 +2,13 @@ from unittest import mock
 
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse, HttpResponseForbidden
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory, TestCase
 
-from ..decorators import (
-    _hmac,
-    _match,
-    verify_signature
-)
+from onfido.decorators import _hmac, _match, verify_signature
 
 # taken from a real requestbin webhook callback
-TEST_WEBHOOK_TOKEN = b'bLFiN4S09FV1nH5G7ZJc3nCYqeMZrHcU'
-TEST_REQUEST_SIGNATURE = '32f77520f7b025f15ef3ab55be178667c92827e3'
+TEST_WEBHOOK_TOKEN = b"bLFiN4S09FV1nH5G7ZJc3nCYqeMZrHcU"
+TEST_REQUEST_SIGNATURE = "32f77520f7b025f15ef3ab55be178667c92827e3"
 # HttpRequest.body is a bytestring
 TEST_REQUEST_BODY = (
     b'{"payload":{"resource_type":"check","action":"check.form_opened",'
@@ -34,21 +30,15 @@ class DecoratorTests(TestCase):
         """Create test request."""
         if signature:
             return self.factory.post(
-                '/', body,
-                content_type='application/json',
-                HTTP_X_SIGNATURE=signature
+                "/", body, content_type="application/json", HTTP_X_SIGNATURE=signature
             )
         else:
-            return self.factory.post(
-                '/', body,
-                content_type='application/json'
-            )
+            return self.factory.post("/", body, content_type="application/json")
 
     def test__hmac(self):
         """Test the _hmac function."""
         self.assertEqual(
-            _hmac(TEST_WEBHOOK_TOKEN, TEST_REQUEST_BODY),
-            TEST_REQUEST_SIGNATURE
+            _hmac(TEST_WEBHOOK_TOKEN, TEST_REQUEST_BODY), TEST_REQUEST_SIGNATURE
         )
 
     def test__match(self):
@@ -59,11 +49,11 @@ class DecoratorTests(TestCase):
             return _match(token, request)
 
         self.assertTrue(match(TEST_WEBHOOK_TOKEN, TEST_REQUEST_BODY))
-        self.assertFalse(match('foo', TEST_REQUEST_BODY))
-        self.assertFalse(match(TEST_WEBHOOK_TOKEN, 'bar'))
+        self.assertFalse(match("foo", TEST_REQUEST_BODY))
+        self.assertFalse(match(TEST_WEBHOOK_TOKEN, "bar"))
 
         # test with a good request, but various HMAC error
-        with mock.patch('onfido.decorators._hmac') as mock_hmac:
+        with mock.patch("onfido.decorators._hmac") as mock_hmac:
             mock_hmac.side_effect = KeyError()
             self.assertFalse(match(TEST_WEBHOOK_TOKEN, TEST_REQUEST_BODY))
             mock_hmac.side_effect = Exception("We are f-secure")
@@ -73,7 +63,7 @@ class DecoratorTests(TestCase):
         request = self.get_request(signature=None)
         self.assertFalse(_match(TEST_WEBHOOK_TOKEN, request))
 
-    @mock.patch('onfido.decorators._match')
+    @mock.patch("onfido.decorators._match")
     def test_verify_signature(self, mock_match):
         """Test the view function decorator itself."""
 
@@ -85,7 +75,7 @@ class DecoratorTests(TestCase):
         request = self.get_request()
 
         # import module as we want to manipulate the WEBHOOK_TOKEN
-        from .. import decorators
+        from onfido import decorators
 
         # in TEST_MODE we return immediately
         decorators.TEST_MODE = True

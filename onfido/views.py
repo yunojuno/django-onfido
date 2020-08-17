@@ -6,15 +6,17 @@ in status' of checks and reports.
 See https://documentation.onfido.com/?shell#webhooks
 
 """
+from __future__ import annotations
+
 import json
 import logging
 
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now
+from django.views.decorators.csrf import csrf_exempt
 
 from .decorators import verify_signature
-from .models import Check, Report, Event
+from .models import Check, Event, Report
 from .settings import LOG_EVENTS
 
 logger = logging.getLogger(__name__)
@@ -22,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 @verify_signature()
-def status_update(request):
+def status_update(request: HttpRequest) -> HttpResponse:
     """
     Handle event callbacks from the API.
 
@@ -50,16 +52,16 @@ def status_update(request):
             event.save()
         return HttpResponse("Update processed.")
     except KeyError as ex:
-        logger.warn("Missing Onfido event content: %s", ex)
+        logger.warning("Missing Onfido event content: %s", ex)
         return HttpResponse("Unexpected event content.")
     except AssertionError:
-        logger.warn("Unknown Onfido resource type: %s", event.resource_type)
+        logger.warning("Unknown Onfido resource type: %s", event.resource_type)
         return HttpResponse("Unknown resource type.")
     except Check.DoesNotExist:
-        logger.warn("Onfido check does not exist: %s", event.onfido_id)
+        logger.warning("Onfido check does not exist: %s", event.onfido_id)
         return HttpResponse("Check not found.")
     except Report.DoesNotExist:
-        logger.warn("Onfido report does not exist: %s", event.onfido_id)
+        logger.warning("Onfido report does not exist: %s", event.onfido_id)
         return HttpResponse("Report not found.")
     except Exception:
         logger.exception("Onfido update could not be processed.")
