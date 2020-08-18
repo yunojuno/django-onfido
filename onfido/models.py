@@ -161,8 +161,10 @@ class BaseStatusModel(BaseModel):
         null=True,
         help_text=_("The timestamp of the most recent status change (from API)."),
     )
-    is_clear = models.NullBooleanField(
+    is_clear = models.BooleanField(
         default=None,
+        null=True,
+        blank=True,
         help_text=_(
             "True if the check / report is 'clear' (via API or manual override)."
         ),

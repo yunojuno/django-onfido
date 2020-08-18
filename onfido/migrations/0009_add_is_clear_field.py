@@ -17,16 +17,20 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="check",
             name="is_clear",
-            field=models.NullBooleanField(
+            field=models.BooleanField(
                 default=None,
+                null=True,
+                blank=True,
                 help_text="True if the check / report is 'clear' (via API or manual override).",
             ),
         ),
         migrations.AddField(
             model_name="report",
             name="is_clear",
-            field=models.NullBooleanField(
+            field=models.BooleanField(
                 default=None,
+                null=True,
+                blank=True,
                 help_text="True if the check / report is 'clear' (via API or manual override).",
             ),
         ),
