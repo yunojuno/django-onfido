@@ -4,12 +4,14 @@ import json
 
 
 def get_countries() -> list:
+    """Return a list of countries for consumer parsing."""
     with open("onfido/data/supported_applicant_countries.json") as f:
         countries = json.load(f)
     return countries
 
 
 def check_supported_country(alpha3: str) -> bool:
+    """Check whether a given country is supported by OnFido."""
     with open("onfido/data/supported_applicant_countries.json") as f:
         countries = json.load(f)
 
