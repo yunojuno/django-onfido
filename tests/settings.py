@@ -14,7 +14,10 @@ try:
     from django.db.models import JSONField  # noqa: F401
 
     DATABASES = {
-        "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": "test.db",}
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": "test.db",
+        }
     }
 except ImportError:
     DATABASES = {
@@ -89,7 +92,11 @@ LOGGING = {
         #     'propagate': True,
         #     'level': 'WARNING',
         # },
-        "onfido": {"handlers": ["console"], "level": "DEBUG", "propagate": False,},
+        "onfido": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
     },
 }
 

@@ -12,9 +12,18 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(model_name="event", name="onfido_id",),
-        migrations.RemoveField(model_name="event", name="status_after",),
-        migrations.RemoveField(model_name="event", name="status_before",),
+        migrations.RemoveField(
+            model_name="event",
+            name="onfido_id",
+        ),
+        migrations.RemoveField(
+            model_name="event",
+            name="status_after",
+        ),
+        migrations.RemoveField(
+            model_name="event",
+            name="status_before",
+        ),
         migrations.AddField(
             model_name="event",
             name="raw",

@@ -502,7 +502,10 @@ class Event(models.Model):
 
     def _resource_manager(self) -> models.Manager:
         """Return the appropriate model manager for the resource_type."""
-        if self.resource_type not in ("check", "report",):
+        if self.resource_type not in (
+            "check",
+            "report",
+        ):
             raise ValueError(f"Unknown resource type: {self.resource_type}")
         if self.resource_type == "check":
             return Check.objects

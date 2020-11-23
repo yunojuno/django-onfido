@@ -59,7 +59,9 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
         ),
         migrations.CreateModel(
             name="Check",
@@ -189,7 +191,9 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
         ),
         migrations.CreateModel(
             name="Report",
@@ -325,6 +329,8 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
         ),
     ]
