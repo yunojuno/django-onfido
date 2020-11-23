@@ -42,9 +42,6 @@ jobs:
 
     env:
       TOXENV: py${{ matrix.python }}-django${{ matrix.django }}
-      TEST_DB_USER: postgres
-      TEST_DB_PASSWORD: postgres
-      TEST_DB_NAME: onfido
 
     services:
       postgres:
@@ -53,8 +50,6 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: onfido
-          ports:
-          - 5432:5432
 
     steps:
       - name: Check out the repository
