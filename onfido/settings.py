@@ -3,7 +3,7 @@ from os import getenv
 from django.conf import settings
 
 # the API HTTP root url
-API_ROOT = "https://api.onfido.com/v2/"
+API_ROOT = "https://api.onfido.com/v3/"
 
 
 def _setting(key, default):

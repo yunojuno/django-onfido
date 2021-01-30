@@ -71,6 +71,11 @@ STATIC_URL = "/static/"
 
 SECRET_KEY = "secret"
 
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    ".ngrok.io",
+]
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

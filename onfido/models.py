@@ -534,5 +534,5 @@ class Event(models.Model):
         obj = payload["object"]
         self.onfido_id = obj["id"]
         self.status = obj["status"]
-        self.completed_at = date_parse(obj["completed_at"])
+        self.completed_at = date_parse(obj["completed_at_iso8601"])
         return self

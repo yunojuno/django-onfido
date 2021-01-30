@@ -30,16 +30,13 @@ def create_applicant(user: settings.AUTH_USER_MODEL, **kwargs: Any) -> Applicant
     return Applicant.objects.create_applicant(user, response)
 
 
-def create_check(
-    applicant: Applicant, check_type: str, reports: Iterable, **kwargs: Any
-) -> Check:
+def create_check(applicant: Applicant, report_names: Iterable, **kwargs: Any) -> Check:
     """
     Create a new Check (and child Reports).
 
     Args:
         applicant: Applicant for whom the checks are being made.
-        check_type: string, currently only 'standard' is supported.
-        reports: list of strings, each of which is a valid report type.
+        report_names: list of strings, each of which is a valid report type.
 
     Kwargs:
         any kwargs passed in are merged into the data dict sent to the API. This
@@ -50,22 +47,13 @@ def create_check(
     Returns a new Check object, and creates the child Report objects.
 
     """
-    if check_type != "standard":
-        raise ValueError(
-            f"Invalid check_type '{check_type}', currently only 'standard' "
-            "checks are supported."
-        )
-    if not isinstance(reports, (list, tuple)):
-        raise ValueError(
-            f"Invalid reports arg '{reports}', must be a list or tuple " "if supplied."
-        )
     data = {
-        "type": check_type,
-        "reports": [{"name": r} for r in reports],
+        "applicant_id": applicant.onfido_id,
+        "report_names": report_names,
     }
     # merge in the additional kwargs
     data.update(kwargs)
-    response = post("applicants/{}/checks".format(applicant.onfido_id), data)
+    response = post("checks", data)
     check = Check.objects.create_check(applicant=applicant, raw=response)
     for report in response["reports"]:
         Report.objects.create_report(check=check, raw=report)
