@@ -4,7 +4,7 @@ from typing import Any, Iterable
 
 from django.conf import settings
 
-from .api import post
+from .api import get, post
 from .models import Applicant, Check, Report
 
 
@@ -55,6 +55,7 @@ def create_check(applicant: Applicant, report_names: Iterable, **kwargs: Any) ->
     data.update(kwargs)
     response = post("checks", data)
     check = Check.objects.create_check(applicant=applicant, raw=response)
-    for report in response["reports"]:
+    reports = get(f"reports?check_id={check.onfido_id}")
+    for report in reports:
         Report.objects.create_report(check=check, raw=report)
     return check

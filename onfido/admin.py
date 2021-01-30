@@ -92,7 +92,6 @@ class CheckAdmin(ResultMixin, EventsMixin, RawMixin, UserMixin, admin.ModelAdmin
     list_display = (
         "onfido_id",
         "_user",
-        "check_type",
         "status",
         "result",
         "created_at",
@@ -104,7 +103,6 @@ class CheckAdmin(ResultMixin, EventsMixin, RawMixin, UserMixin, admin.ModelAdmin
         "user",
         "created_at",
         "applicant",
-        "check_type",
         "status",
         "result",
         "updated_at",
@@ -112,7 +110,7 @@ class CheckAdmin(ResultMixin, EventsMixin, RawMixin, UserMixin, admin.ModelAdmin
         "_events",
     )
     search_fields = ("onfido_id", "user__first_name", "user__last_name")
-    list_filter = ("created_at", "updated_at", "check_type", "status", "result")
+    list_filter = ("created_at", "updated_at", "status", "result")
     ordering = ("user__first_name", "user__last_name")
     raw_id_fields = ("applicant", "user")
     exclude = ("raw",)

@@ -420,14 +420,12 @@ class CheckManagerTests(TestCase):
             "id": "c26f22d5-4903-401f-8a48-7b0211d03c1f",
             "created_at": "2016-10-15T19:05:50Z",
             "status": "awaiting_applicant",
-            "type": "standard",
             "result": "clear",
         }
         check = Check.objects.create_check(applicant=applicant, raw=data)
         self.assertEqual(check.user, user)
         self.assertEqual(check.applicant, applicant)
         self.assertEqual(check.onfido_id, data["id"])
-        self.assertEqual(check.check_type, data["type"])
         self.assertEqual(check.status, data["status"])
         self.assertEqual(check.result, data["result"])
         self.assertEqual(check.created_at, date_parse(data["created_at"]))
@@ -446,7 +444,6 @@ class CheckTests(TestCase):
             onfido_id="bar",
             user=self.user,
             applicant=self.applicant,
-            check_type="standard",
         ).save()
 
     def test_defaults(self):
@@ -456,7 +453,6 @@ class CheckTests(TestCase):
         self.assertEqual(check.created_at, None)
         self.assertEqual(check.status, None)
         self.assertEqual(check.result, None)
-        self.assertEqual(check.check_type, "")
 
     def test_save(self):
         """Test save method."""
@@ -465,7 +461,6 @@ class CheckTests(TestCase):
         self.assertEqual(check.created_at, None)
         self.assertEqual(check.status, None)
         self.assertEqual(check.result, None)
-        self.assertEqual(check.check_type, "standard")
         # test the related_names
         self.assertEqual(self.applicant.checks.get(), check)
         self.assertEqual(self.user.onfido_checks.get(), check)
@@ -517,7 +512,6 @@ class ReportManagerTests(TestCase):
         self.check = Check(
             user=self.user,
             applicant=self.applicant,
-            check_type="standard",
             onfido_id="bar",
         ).save()
 
@@ -548,7 +542,6 @@ class ReportTests(TestCase):
             onfido_id="bar",
             user=self.user,
             applicant=self.applicant,
-            check_type="standard",
         ).save()
         self.report = Report(
             user=self.user,
@@ -648,7 +641,6 @@ class EventTests(TestCase):
             onfido_id="bar",
             user=self.user,
             applicant=self.applicant,
-            check_type="standard",
         ).save()
 
     def test__resource_manager(self):

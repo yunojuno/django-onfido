@@ -76,7 +76,7 @@ class ViewTests(TestCase):
         data["payload"]["resource_type"] = "check"
         user = get_user_model().objects.create_user("fred")
         applicant = Applicant(user=user, onfido_id="foo").save()
-        check = Check(user=user, applicant=applicant, check_type="standard")
+        check = Check(user=user, applicant=applicant)
         check.onfido_id = data["payload"]["object"]["id"]
         check.save()
 

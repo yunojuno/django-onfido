@@ -47,7 +47,7 @@ class BaseModel(models.Model):
     def save(self, *args: Any, **kwargs: Any) -> BaseModel:
         """Save object and return self (for chaining methods)."""
         self.full_clean()
-        super(BaseModel, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         return self
 
     def parse(self, raw_json: dict) -> BaseModel:
@@ -260,7 +260,7 @@ class BaseStatusModel(BaseModel):
 
     def parse(self, raw_json: dict) -> Event:
         """Parse the raw value out into other properties."""
-        super(BaseStatusModel, self).parse(raw_json)
+        super().parse(raw_json)
         self.result = self.raw["result"]
         self.status = self.raw["status"]
         if self.result == "clear":
@@ -348,8 +348,6 @@ class CheckQuerySet(BaseQuerySet):
 class Check(BaseStatusModel):
     """The state of an individual check made against an Applicant."""
 
-    CHECK_TYPE_CHOICES = (("express", "Express check"), ("standard", "Standard check"))
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -364,27 +362,14 @@ class Check(BaseStatusModel):
         help_text=_("The applicant for whom the check is being made."),
         related_name="checks",
     )
-    check_type = models.CharField(
-        max_length=10,
-        choices=CHECK_TYPE_CHOICES,
-        help_text=_("See https://documentation.onfido.com/#check-types"),
-    )
 
     objects = CheckQuerySet.as_manager()
 
     def __str__(self) -> str:
-        return "{} for {}".format(self.get_check_type_display().capitalize(), self.user)
+        return f"Onfido check for {self.user}"
 
     def __repr__(self) -> str:
-        return "<Check id={} type='{}' user_id={}>".format(
-            self.id, self.check_type, self.user.id
-        )
-
-    def parse(self, raw_json: dict) -> Check:
-        """Parse the raw value out into other properties."""
-        super(Check, self).parse(raw_json)
-        self.check_type = self.raw["type"]
-        return self
+        return f"<Check id={self.id} user_id={self.user_id}>"
 
 
 class ReportQuerySet(BaseQuerySet):
@@ -399,16 +384,53 @@ class ReportQuerySet(BaseQuerySet):
 class Report(BaseStatusModel):
     """Specific reports associated with a Check."""
 
-    REPORT_TYPE_CHOICES = (
-        ("identity", "Identity report"),
-        ("document", "Document report"),
-        ("street_level", "Street level report"),
-        ("facial_similarity", "Facial similarity report"),
-        ("credit", "Credit report"),
-        ("criminal_history", "Criminal history"),
-        ("right_to_work", "Right to work"),
-        ("ssn_trace", "SSN trace"),
-    )
+    # v2 API report types - retained for backwards compatibility,
+    # but superseded by ReportType
+    REPORT_TYPE_CHOICES_DEPRECATED = [
+        ("identity", "Identity report (deprecated)"),
+        # ("document", "Document report"),
+        ("street_level", "Street level report (deprecated)"),
+        ("facial_similarity", "Facial similarity report (deprecated)"),
+        ("credit", "Credit report (deprecated)"),
+        ("criminal_history", "Criminal history (deprecated)"),
+        # ("right_to_work", "Right to work"),
+        ("ssn_trace", "SSN trace (deprecated)"),
+    ]
+
+    class ReportType(models.TextChoices):
+        # https://documentation.onfido.com/#report-names-in-api
+        DOCUMENT = ("document", "Document")
+        DOCUMENT_WITH_ADDRESS_INFORMATION = (
+            "document_with_address_information",
+            "Document with Address Information",
+        )
+        DOCUMENT_WITH_DRIVING_LICENCE_INFORMATION = (
+            "document_with_driving_licence_information",
+            "Document with Driving Licence Information",
+        )
+        FACIAL_SIMILARITY_PHOTO = (
+            "facial_similarity_photo",
+            "Facial Similarity (photo)",
+        )
+        FACIAL_SIMILARITY_PHOTO_FULLY_AUTO = (
+            "facial_similarity_photo_fully_auto",
+            "Facial Similarity (auto)",
+        )
+        FACIAL_SIMILARITY_VIDEO = (
+            "facial_similarity_video",
+            "Facial Similarity (video)",
+        )
+        KNOWN_FACES = ("known_faces", "Known Faces")
+        IDENTITY_ENHANCED = ("identity_enhanced", "Identity (enhanced)")
+        WATCHLIST_ENHANCED = ("watchlist_enhanced", "Watchlist (enhanced)")
+        WATCHLIST_STANDARD = ("watchlist_standard", "Watchlist")
+        WATCHLIST_PEPS_ONLY = ("watchlist_peps_only", "Watchlist (PEPs only)")
+        WATCHLIST_SANCTIONS_ONLY = (
+            "watchlist_sanctions_only",
+            "Watchlist (sanctions only)",
+        )
+        PROOF_OF_ADDRESS = ("proof_of_address", "Proof of Address")
+        RIGHT_TO_WORK = ("right_to_work", "Right to Work")
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -425,8 +447,8 @@ class Report(BaseStatusModel):
         related_name="reports",
     )
     report_type = models.CharField(
-        max_length=20,
-        choices=REPORT_TYPE_CHOICES,
+        max_length=50,
+        choices=REPORT_TYPE_CHOICES_DEPRECATED + ReportType.choices,
         help_text=_(
             "The name of the report - see https://documentation.onfido.com/#reports"
         ),
@@ -525,7 +547,7 @@ class Event(models.Model):
     def save(self, *args: Any, **kwargs: Any) -> Event:
         """Save object and return self (for chaining methods)."""
         self.full_clean()
-        super(Event, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         return self
 
     def parse(self, raw_json: dict) -> Event:

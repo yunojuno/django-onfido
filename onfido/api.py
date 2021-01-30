@@ -25,7 +25,7 @@ class ApiError(Exception):
         """Initialise error from response object."""
         data = response.json()
         logger.debug("Onfido API error: {}".format(data))
-        super(ApiError, self).__init__(data["error"]["message"])
+        super().__init__(data["error"]["message"])
         self.error_type = data["error"]["type"]
 
 
