@@ -510,7 +510,10 @@ class ReportManagerTests(TestCase):
         self.user = get_user_model().objects.create_user(
             username="foo", first_name="œ∑´®†¥"
         )
-        self.applicant = Applicant(user=self.user, onfido_id="foo",).save()
+        self.applicant = Applicant(
+            user=self.user,
+            onfido_id="foo",
+        ).save()
         self.check = Check(
             user=self.user,
             applicant=self.applicant,

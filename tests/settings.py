@@ -80,7 +80,11 @@ LOGGING = {
         #     'propagate': True,
         #     'level': 'WARNING',
         # },
-        "onfido": {"handlers": ["console"], "level": "DEBUG", "propagate": False,},
+        "onfido": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
     },
 }
 

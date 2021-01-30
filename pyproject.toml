@@ -45,7 +45,7 @@ flake8-docstrings = "*"
 isort = "*"
 mypy = "*"
 pre-commit = "*"
-black = "=19.10b0"
+black = {version = "*", allow-prereleases = true}
 freezegun = "*"
 tox = "*"
 
