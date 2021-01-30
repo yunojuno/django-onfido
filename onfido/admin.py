@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.db import models
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from .models import Applicant, BaseModel, Check, Event, Report
 

@@ -633,8 +633,8 @@ class EventTests(TestCase):
             "object": {
                 "id": "6d7ee353-db1e-4b45-9034-f7e75198cbe0",
                 "status": "awaiting_applicant",
-                "completed_at": "2016-10-23 12:52:33 UTC",
-                "href": "https://api.onfido.com/v1/applicants/xxx",
+                "completed_at_iso8601": "2019-10-28T15:00:39Z",
+                "href": "https://api.onfido.com/v3/applicants/xxx",
             },
         }
     }
@@ -698,7 +698,8 @@ class EventTests(TestCase):
         self.assertEqual(event.action, data["payload"]["action"])
         self.assertEqual(event.status, data["payload"]["object"]["status"])
         self.assertEqual(
-            event.completed_at, date_parse(data["payload"]["object"]["completed_at"])
+            event.completed_at,
+            date_parse(data["payload"]["object"]["completed_at_iso8601"]),
         )
         self.assertEqual(event.raw, data)
 
@@ -718,6 +719,7 @@ class EventTests(TestCase):
         self.assertEqual(event.action, data["payload"]["action"])
         self.assertEqual(event.status, data["payload"]["object"]["status"])
         self.assertEqual(
-            event.completed_at, date_parse(data["payload"]["object"]["completed_at"])
+            event.completed_at,
+            date_parse(data["payload"]["object"]["completed_at_iso8601"]),
         )
         self.assertEqual(event.raw, data)

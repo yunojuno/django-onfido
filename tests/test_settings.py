@@ -11,7 +11,7 @@ class SettingsTests(TestCase):
 
     def test_defaults(self):
         """Confirm the default settings exist."""
-        self.assertEqual(settings.API_ROOT, "https://api.onfido.com/v2/")
+        self.assertEqual(settings.API_ROOT, "https://api.onfido.com/v3/")
         self.assertEqual(settings.API_KEY, None)
         self.assertEqual(settings.LOG_EVENTS, True)
         self.assertEqual(settings.WEBHOOK_TOKEN, None)
@@ -49,7 +49,7 @@ class SettingsTests(TestCase):
             "email": "foobar@example.com",
             "first_name": "Foo",
             "gender": None,
-            "href": "/v2/applicants/1b0f8e99-da6b-4ca5-9580-eed99ff691cd",
+            "href": "/v3/applicants/1b0f8e99-da6b-4ca5-9580-eed99ff691cd",
             "id": "1b0f8e97-dc6b-4ca5-9580-eed99ff691cd",
             "id_numbers": [],
             "last_name": "Bar",
@@ -68,7 +68,7 @@ class SettingsTests(TestCase):
             clean,
             {
                 "created_at": "2017-05-03T13:12:17Z",
-                "href": "/v2/applicants/1b0f8e99-da6b-4ca5-9580-eed99ff691cd",
+                "href": "/v3/applicants/1b0f8e99-da6b-4ca5-9580-eed99ff691cd",
                 "id": "1b0f8e97-dc6b-4ca5-9580-eed99ff691cd",
             },
         )
