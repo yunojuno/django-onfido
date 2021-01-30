@@ -200,7 +200,7 @@ class BaseStatusModel(BaseModel):
             "payload": {
                 "action": "manual.override",
                 "object": {
-                    "completed_at": tz_now().isoformat(),
+                    "completed_at_iso8601": tz_now().isoformat(),
                     "href": self.href,
                     "id": self.onfido_id,
                     "status": self.status,

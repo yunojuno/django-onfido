@@ -20,16 +20,6 @@ from .test_data import (
     TEST_REPORT_IDENTITY_ENHANCED,
 )
 
-# CREATE_APPLICANT_RETURN = {
-#     "id": "a9acefdf-3dc5-4973-aa78-20bd36825b50",
-#     "created_at": "2016-10-18T16:02:04Z",
-#     "title": "Mr",
-#     "first_name": "Fred",
-#     "last_name": "Flintstone",
-#     "email": "fred@flintstone.com",
-#     "country": "GBR",
-# }
-
 
 class HelperTests(TestCase):
 
@@ -101,32 +91,36 @@ class HelperTests(TestCase):
         # 1. use the defaults.
         check = create_check(
             applicant,
-            (TEST_REPORT_DOCUMENT["name"], TEST_REPORT_IDENTITY_ENHANCED["name"]),
+            report_names=[
+                TEST_REPORT_DOCUMENT["name"],
+                TEST_REPORT_IDENTITY_ENHANCED["name"],
+            ],
         )
         mock_post.assert_called_once_with(
             "checks",
             {
                 "applicant_id": applicant.onfido_id,
-                "report_names": (
+                "report_names": [
                     Report.ReportType.DOCUMENT.value,
                     Report.ReportType.IDENTITY_ENHANCED.value,
-                ),
+                ],
             },
         )
         self.assertEqual(Check.objects.get(), check)
         # check we have two reports, and that the raw field matches the JSON
         # and that the parse method has run
         self.assertEqual(Report.objects.count(), 2)
-        for r in TEST_CHECK["reports"]:
-            # this will only work if the JSON has been parsed correctly
-            report = Report.objects.get(onfido_id=r["id"])
-            self.assertEqual(report.raw, r)
-
         # confirm that kwargs are merged in correctly
         check.delete()
         mock_post.reset_mock()
-        check = create_check(applicant, ("identity",), foo="bar")
+        check = create_check(
+            applicant, report_names=[Report.ReportType.IDENTITY_ENHANCED], foo="bar"
+        )
         mock_post.assert_called_once_with(
-            "applicants/a9acefdf-3dc5-4973-aa78-20bd36825b50/checks",
-            {"reports": [{"name": "identity"}], "type": "standard", "foo": "bar"},
+            "checks",
+            {
+                "applicant_id": applicant.onfido_id,
+                "report_names": [Report.ReportType.IDENTITY_ENHANCED.value],
+                "foo": "bar",
+            },
         )
