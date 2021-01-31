@@ -56,6 +56,6 @@ def create_check(applicant: Applicant, report_names: Iterable, **kwargs: Any) ->
     response = post("checks", data)
     check = Check.objects.create_check(applicant=applicant, raw=response)
     reports = get(f"reports?check_id={check.onfido_id}")
-    for report in reports:
+    for report in reports["reports"]:
         Report.objects.create_report(check=check, raw=report)
     return check

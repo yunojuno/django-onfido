@@ -266,6 +266,7 @@ class BaseStatusModel(BaseModel):
 
     def parse(self, raw_json: dict) -> Event:
         """Parse the raw value out into other properties."""
+        print("Parsing:", raw_json)
         super().parse(raw_json)
         self.result = self.raw["result"]
         self.status = self.raw["status"]

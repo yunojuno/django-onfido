@@ -66,7 +66,9 @@ class TestHelperFunctions:
         """Test the create_check function."""
         applicant_data = deepcopy(TEST_APPLICANT)
         mock_post.return_value = TEST_CHECK
-        mock_get.return_value = [TEST_REPORT_DOCUMENT, TEST_REPORT_IDENTITY_ENHANCED]
+        mock_get.return_value = dict(
+            reports=[TEST_REPORT_DOCUMENT, TEST_REPORT_IDENTITY_ENHANCED]
+        )
         applicant = Applicant.objects.create_applicant(user, applicant_data)
 
         # 1. use the defaults.

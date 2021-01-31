@@ -26,7 +26,6 @@ def user():
 @pytest.fixture
 def applicant(user):
     data = copy.deepcopy(TEST_APPLICANT)
-    print(data)
     return Applicant.objects.create_applicant(user=user, raw=data)
 
 
@@ -256,7 +255,7 @@ TEST_EVENT = {
         "action": "check.form_opened",
         "object": {
             "id": CHECK_ID,
-            "status": "awaiting_applicant",
+            "status": "complete",
             "completed_at_iso8601": "2019-10-28T15:00:39Z",
             "href": f"https://api.onfido.com/v3/checks/{CHECK_ID}",
         },

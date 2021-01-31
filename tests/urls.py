@@ -7,5 +7,5 @@ import onfido.urls
 urlpatterns = [
     path("", debug.default_urlconf),
     path("admin/", admin.site.urls),
-    path("onfido/", include(onfido.urls)),
+    path("onfido/", include(onfido.urls, namespace="onfido")),
 ]
