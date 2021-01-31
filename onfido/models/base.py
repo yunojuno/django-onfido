@@ -10,16 +10,19 @@ from django.db import models
 from django.utils.timezone import now as tz_now
 from django.utils.translation import gettext_lazy as _
 
-from .api import get
-from .compat import JSONField
-from .settings import scrub_applicant_data, scrub_report_data
-from .signals import on_completion, on_status_change
+from ..api import get
+from ..compat import JSONField
+from ..signals import on_completion, on_status_change
+from .event import Event
 
 logger = logging.getLogger(__name__)
 
 
 class BaseModel(models.Model):
     """Base model used to set timestamps."""
+
+    # used to format the href - override in subclasses
+    base_href = ""
 
     onfido_id = models.CharField(
         "Onfido ID",
@@ -41,8 +44,8 @@ class BaseModel(models.Model):
 
     @property
     def href(self) -> str:
-        """Return the href from the raw JSON field."""
-        return self.raw["href"]
+        """Return the href from base_href."""
+        return f"{self.base_href}/{self.onfido_id}"
 
     def save(self, *args: Any, **kwargs: Any) -> BaseModel:
         """Save object and return self (for chaining methods)."""
@@ -175,6 +178,9 @@ class BaseStatusModel(BaseModel):
 
     def events(self) -> BaseQuerySet:
         """Return queryset of Events related to this object."""
+        # prevents circ. import
+        from .event import Event
+
         return Event.objects.filter(
             onfido_id=self.onfido_id, resource_type=self._meta.model_name
         )
@@ -293,271 +299,4 @@ class BaseStatusModel(BaseModel):
         self._override_event(user).save()
         self.is_clear = True
         self.save()
-        return self
-
-
-class ApplicantQuerySet(BaseQuerySet):
-    """Custom Applicant queryset."""
-
-    def create_applicant(self, user: settings.AUTH_USER_MODEL, raw: dict) -> Applicant:
-        """Create a new applicant in Onfido from a user."""
-        logger.debug("Creating new Onfido applicant from JSON: %s", raw)
-        return Applicant(user=user).parse(raw).save()
-
-
-class Applicant(BaseModel):
-    """An Onfido applicant record."""
-
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        help_text=_("Django user that maps to this applicant."),
-        related_name="onfido_applicant",
-    )
-
-    objects = ApplicantQuerySet.as_manager()
-
-    def __str__(self) -> str:
-        return str(self.user)
-
-    def __repr__(self) -> str:
-        return "<Applicant id={} user_id={}>".format(self.id, self.user.id)
-
-    def parse(self, raw_json: dict) -> Applicant:
-        """
-        Parse the raw value out into other properties.
-
-        Before parsing the data, this method will call the
-        scrub_report_data function to remove sensitive data
-        so that it is not saved into the local object.
-
-        """
-        super().parse(scrub_applicant_data(raw_json))
-        return self
-
-
-class CheckQuerySet(BaseQuerySet):
-    """Check model manager."""
-
-    def create_check(self, applicant: Applicant, raw: dict) -> Check:
-        """Create a new Check object from the raw JSON."""
-        logger.debug("Creating new Onfido check from JSON: %s", raw)
-        return Check(user=applicant.user, applicant=applicant).parse(raw).save()
-
-
-class Check(BaseStatusModel):
-    """The state of an individual check made against an Applicant."""
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        help_text=_(
-            "The Django user (denormalised from Applicant to make navigation easier)."
-        ),  # noqa
-        related_name="onfido_checks",
-    )
-    applicant = models.ForeignKey(
-        Applicant,
-        on_delete=models.CASCADE,
-        help_text=_("The applicant for whom the check is being made."),
-        related_name="checks",
-    )
-
-    objects = CheckQuerySet.as_manager()
-
-    def __str__(self) -> str:
-        return f"Onfido check for {self.user}"
-
-    def __repr__(self) -> str:
-        return f"<Check id={self.id} user_id={self.user_id}>"
-
-
-class ReportQuerySet(BaseQuerySet):
-    """Report model queryset."""
-
-    def create_report(self, check: Check, raw: dict) -> Report:
-        """Create a new Report from the raw JSON."""
-        logger.debug("Creating new Onfido report from JSON: %s", raw)
-        return Report(user=check.user, onfido_check=check).parse(raw).save()
-
-
-class Report(BaseStatusModel):
-    """Specific reports associated with a Check."""
-
-    # v2 API report types - retained for backwards compatibility,
-    # but superseded by ReportType
-    REPORT_TYPE_CHOICES_DEPRECATED = [
-        ("identity", "Identity report (deprecated)"),
-        # ("document", "Document report"),
-        ("street_level", "Street level report (deprecated)"),
-        ("facial_similarity", "Facial similarity report (deprecated)"),
-        ("credit", "Credit report (deprecated)"),
-        ("criminal_history", "Criminal history (deprecated)"),
-        # ("right_to_work", "Right to work"),
-        ("ssn_trace", "SSN trace (deprecated)"),
-    ]
-
-    class ReportType(models.TextChoices):
-        # https://documentation.onfido.com/#report-names-in-api
-        DOCUMENT = ("document", "Document")
-        DOCUMENT_WITH_ADDRESS_INFORMATION = (
-            "document_with_address_information",
-            "Document with Address Information",
-        )
-        DOCUMENT_WITH_DRIVING_LICENCE_INFORMATION = (
-            "document_with_driving_licence_information",
-            "Document with Driving Licence Information",
-        )
-        FACIAL_SIMILARITY_PHOTO = (
-            "facial_similarity_photo",
-            "Facial Similarity (photo)",
-        )
-        FACIAL_SIMILARITY_PHOTO_FULLY_AUTO = (
-            "facial_similarity_photo_fully_auto",
-            "Facial Similarity (auto)",
-        )
-        FACIAL_SIMILARITY_VIDEO = (
-            "facial_similarity_video",
-            "Facial Similarity (video)",
-        )
-        KNOWN_FACES = ("known_faces", "Known Faces")
-        IDENTITY_ENHANCED = ("identity_enhanced", "Identity (enhanced)")
-        WATCHLIST_ENHANCED = ("watchlist_enhanced", "Watchlist (enhanced)")
-        WATCHLIST_STANDARD = ("watchlist_standard", "Watchlist")
-        WATCHLIST_PEPS_ONLY = ("watchlist_peps_only", "Watchlist (PEPs only)")
-        WATCHLIST_SANCTIONS_ONLY = (
-            "watchlist_sanctions_only",
-            "Watchlist (sanctions only)",
-        )
-        PROOF_OF_ADDRESS = ("proof_of_address", "Proof of Address")
-        RIGHT_TO_WORK = ("right_to_work", "Right to Work")
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        help_text=_(
-            "The Django user (denormalised from Applicant to make navigation easier)."
-        ),  # noqa
-        related_name="onfido_reports",
-    )
-    onfido_check = models.ForeignKey(
-        Check,
-        on_delete=models.CASCADE,
-        help_text=_("Check to which this report is attached."),
-        related_name="reports",
-    )
-    report_type = models.CharField(
-        max_length=50,
-        choices=REPORT_TYPE_CHOICES_DEPRECATED + ReportType.choices,
-        help_text=_(
-            "The name of the report - see https://documentation.onfido.com/#reports"
-        ),
-    )
-
-    objects = ReportQuerySet.as_manager()
-
-    def __str__(self) -> str:
-        return "{} for {}".format(
-            self.get_report_type_display().capitalize(), self.user
-        )
-
-    def __repr__(self) -> str:
-        return "<Report id={} type='{}' user_id={}>".format(
-            self.id, self.report_type, self.user.id
-        )
-
-    def parse(self, raw_json: dict) -> Report:
-        """
-        Parse the raw value out into other properties.
-
-        Before parsing the data, this method will call the
-        scrub_report_data function to remove sensitive data
-        so that it is not saved into the local object.
-
-        """
-        super().parse(scrub_report_data(raw_json))
-        self.report_type = self.raw["name"]
-        return self
-
-
-class Event(models.Model):
-    """Used to record callback events received from the API."""
-
-    onfido_id = models.CharField(
-        "Onfido ID",
-        max_length=40,
-        help_text=_("The Onfido ID of the related resource."),
-    )
-    resource_type = models.CharField(
-        max_length=20, help_text=_("The resource_type returned from the API callback.")
-    )
-    action = models.CharField(
-        max_length=20, help_text=_("The event name as returned from the API callback.")
-    )
-    status = models.CharField(
-        max_length=20, help_text=_("The status of the object after the event.")
-    )
-    completed_at = models.DateTimeField(
-        help_text=_("The timestamp returned from the Onfido API."),
-        blank=True,
-        null=True,
-    )
-    received_at = models.DateTimeField(
-        help_text=_("The timestamp when the server received the event."),
-    )
-    raw = JSONField(
-        help_text=_("The raw JSON returned from the API."), blank=True, null=True
-    )
-
-    class Meta:
-        ordering = ["completed_at"]
-
-    def __str__(self) -> str:
-        return "{} event occurred on {}.{}".format(
-            self.action, self.resource_type, self.onfido_id
-        )
-
-    def __repr__(self) -> str:
-        return "<Event id={} action='{}' onfido_id='{}.{}'>".format(
-            self.id, self.action, self.resource_type, self.onfido_id
-        )
-
-    def _resource_manager(self) -> models.Manager:
-        """Return the appropriate model manager for the resource_type."""
-        if self.resource_type not in (
-            "check",
-            "report",
-        ):
-            raise ValueError(f"Unknown resource type: {self.resource_type}")
-        if self.resource_type == "check":
-            return Check.objects
-        elif self.resource_type == "report":
-            return Report.objects
-
-    @property
-    def resource(self) -> models.Manager:
-        """Return the underlying Check or Report resource."""
-        return self._resource_manager().get(onfido_id=self.onfido_id)
-
-    @property
-    def user(self) -> settings.AUTH_USER_MODEL:
-        """Return the user to whom the resource refers."""
-        return self.resource.user
-
-    def save(self, *args: Any, **kwargs: Any) -> Event:
-        """Save object and return self (for chaining methods)."""
-        self.full_clean()
-        super().save(*args, **kwargs)
-        return self
-
-    def parse(self, raw_json: dict) -> Event:
-        """Parse the raw value out into other properties."""
-        self.raw = raw_json
-        payload = self.raw["payload"]
-        self.resource_type = payload["resource_type"]
-        self.action = payload["action"]
-        obj = payload["object"]
-        self.onfido_id = obj["id"]
-        self.status = obj["status"]
-        self.completed_at = date_parse(obj["completed_at_iso8601"])
         return self

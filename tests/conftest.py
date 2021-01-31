@@ -1,11 +1,65 @@
-"""Test data taken from Onfido v3 API docs."""
+"""Shared pytest fixtures and test data."""
+import copy
 import uuid
+
+import pytest
+from django.contrib.auth import get_user_model
+
+from onfido.models import Applicant, Check, Event, Report
 
 APPLICANT_ID = str(uuid.uuid4())
 CHECK_ID = str(uuid.uuid4())
 IDENTITY_REPORT_ID = str(uuid.uuid4())
 DOCUMENT_REPORT_ID = str(uuid.uuid4())
 DOCUMENT_ID = str(uuid.uuid4())
+
+User = get_user_model()
+
+
+@pytest.fixture
+def user():
+    return User.objects.create_user(
+        "fred", first_name="Fred", last_name="Flinstone", email="fred@example.com"
+    )
+
+
+@pytest.fixture
+def applicant(user):
+    data = copy.deepcopy(TEST_APPLICANT)
+    print(data)
+    return Applicant.objects.create_applicant(user=user, raw=data)
+
+
+@pytest.fixture
+def check(applicant):
+    data = copy.deepcopy(TEST_CHECK)
+    return Check.objects.create_check(applicant, raw=data)
+
+
+@pytest.fixture
+def identity_report(check):
+    data = copy.deepcopy(TEST_REPORT_IDENTITY_ENHANCED)
+    return Report.objects.create_report(check, raw=data)
+
+
+@pytest.fixture
+def document_report(check):
+    data = copy.deepcopy(TEST_REPORT_DOCUMENT)
+    return Report.objects.create_report(check, raw=data)
+
+
+@pytest.fixture
+def report(identity_report):
+    return identity_report
+
+
+@pytest.fixture
+def event(check):
+    data = copy.deepcopy(TEST_EVENT)
+    return Event().parse(data)
+
+
+# Test data taken from Onfido v3 API docs.
 
 # https://documentation.onfido.com/#applicant-object
 TEST_APPLICANT = {
@@ -194,4 +248,17 @@ TEST_REPORT_DOCUMENT = {
         "compromised_document": {"result": "clear"},
     },
     "check_id": CHECK_ID,
+}
+
+TEST_EVENT = {
+    "payload": {
+        "resource_type": "check",
+        "action": "check.form_opened",
+        "object": {
+            "id": CHECK_ID,
+            "status": "awaiting_applicant",
+            "completed_at_iso8601": "2019-10-28T15:00:39Z",
+            "href": f"https://api.onfido.com/v3/checks/{CHECK_ID}",
+        },
+    }
 }

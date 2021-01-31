@@ -1,4 +1,6 @@
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Union
 
 import simplejson as json  # simplejson supports Decimal
 from django.contrib import admin
@@ -7,7 +9,10 @@ from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
-from .models import Applicant, BaseModel, Check, Event, Report
+from .models import Applicant, Check, Event, Report
+
+if TYPE_CHECKING:
+    from .models.base import BaseModel
 
 
 class ResultMixin(object):

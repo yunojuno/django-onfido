@@ -2,7 +2,7 @@ from unittest import mock
 
 from django.test import TestCase
 
-from onfido import settings
+from onfido import api, settings
 
 
 class SettingsTests(TestCase):
@@ -11,7 +11,7 @@ class SettingsTests(TestCase):
 
     def test_defaults(self):
         """Confirm the default settings exist."""
-        self.assertEqual(settings.API_ROOT, "https://api.onfido.com/v3/")
+        self.assertEqual(api.API_ROOT, "https://api.onfido.com/v3/")
         self.assertEqual(settings.LOG_EVENTS, True)
         self.assertEqual(settings.TEST_MODE, False)
         # These may have been set locally
@@ -20,11 +20,12 @@ class SettingsTests(TestCase):
 
     def test_default_report_scrubber(self):
         """Test the report_scrubber default function."""
-        data = {"foo": "bar", "breakdown": {}, "properties": {}}
+        data = {"id": "123", "foo": "bar", "breakdown": {}, "properties": {}}
         # default function should remove breakdown and properties
         data = settings.DEFAULT_REPORT_SCRUBBER(data)
         self.assertFalse("breakdown" in data)
         self.assertFalse("properties" in data)
+        self.assertTrue("id" in data)
 
     # mock scrubber that does nothing and returns the data unchanged
     @mock.patch("onfido.settings.scrub_report_data", lambda d: d)

@@ -1,5 +1,5 @@
 from distutils.version import StrictVersion
-from os import path
+from os import getenv, path
 
 import django
 from django.core.exceptions import ImproperlyConfigured
@@ -92,3 +92,6 @@ ROOT_URLCONF = "tests.urls"
 
 if not DEBUG:
     raise ImproperlyConfigured("This settings file can only be used with DEBUG=True")
+
+# False by default, but if True this will run the integration tests in test_integration
+TEST_INTEGRATION = bool(getenv("ONFIDO_TEST_INTEGRATION", False))

@@ -2,9 +2,6 @@ from os import getenv
 
 from django.conf import settings
 
-# the API HTTP root url
-API_ROOT = "https://api.onfido.com/v3/"
-
 
 def _setting(key, default):
     return getenv(key, default) or getattr(settings, key, default)
@@ -27,19 +24,12 @@ TEST_MODE = _setting("ONFIDO_TEST_MODE", False)
 
 def DEFAULT_REPORT_SCRUBBER(raw):
     """Remove breakdown and properties."""
-    try:
-        del raw["breakdown"]
-        del raw["properties"]
-    except KeyError:
-        pass
-    return raw
+    return {k: v for k, v in raw.items() if k not in ("breakdown", "properties")}
 
 
 def DEFAULT_APPLICANT_SCRUBBER(raw):
     """Remove all personal data."""
-    for k in [k for k in raw.keys() if k not in ("id", "href", "created_at")]:
-        del raw[k]
-    return raw
+    return {k: v for k, v in raw.items() if k in ("id", "href", "created_at")}
 
 
 # functions used to scrub sensitive data from reports
