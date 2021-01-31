@@ -15,12 +15,6 @@ class Migration(migrations.Migration):
             name="report_type",
             field=models.CharField(
                 choices=[
-                    ("identity", "Identity report (deprecated)"),
-                    ("street_level", "Street level report (deprecated)"),
-                    ("facial_similarity", "Facial similarity report (deprecated)"),
-                    ("credit", "Credit report (deprecated)"),
-                    ("criminal_history", "Criminal history (deprecated)"),
-                    ("ssn_trace", "SSN trace (deprecated)"),
                     ("document", "Document"),
                     (
                         "document_with_address_information",
@@ -41,6 +35,12 @@ class Migration(migrations.Migration):
                     ("watchlist_sanctions_only", "Watchlist (sanctions only)"),
                     ("proof_of_address", "Proof of Address"),
                     ("right_to_work", "Right to Work"),
+                    ("identity", "x Identity report (deprecated)"),
+                    ("street_level", "x Street level report (deprecated)"),
+                    ("facial_similarity", "x Facial similarity report (deprecated)"),
+                    ("credit", "x Credit report (deprecated)"),
+                    ("criminal_history", "x Criminal history (deprecated)"),
+                    ("ssn_trace", "SSN trace (deprecated)"),
                 ],
                 help_text="The name of the report - see https://documentation.onfido.com/#reports",
                 max_length=50,

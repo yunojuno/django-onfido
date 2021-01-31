@@ -9,6 +9,7 @@ from django.urls import reverse
 
 from onfido.helpers import create_applicant, create_check
 from onfido.models import Event, Report
+from onfido.models.base import BaseStatusModel
 
 from .conftest import (
     TEST_APPLICANT,
@@ -45,8 +46,8 @@ def test_end_to_end(mock_fetch, mock_get, mock_post, user, client: Client):
     # so that the check comes back from the fetch() as "complete" and "clear"
     check.refresh_from_db()
     mock_fetch.return_value = check.raw
-    mock_fetch.return_value["status"] = "complete"
-    mock_fetch.return_value["result"] = "clear"
+    mock_fetch.return_value["status"] = BaseStatusModel.Status.COMPLETE
+    mock_fetch.return_value["result"] = BaseStatusModel.Result.CLEAR
 
     # Call the status_update webhook with the TEST_EVENT payload
     url = reverse("onfido:status_update")
@@ -56,4 +57,4 @@ def test_end_to_end(mock_fetch, mock_get, mock_post, user, client: Client):
     assert Event.objects.count() == 1
     check.refresh_from_db()
     assert check.is_clear
-    assert check.status == "complete"
+    assert check.status == BaseStatusModel.Status.COMPLETE

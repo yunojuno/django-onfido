@@ -113,48 +113,37 @@ class BaseQuerySet(models.QuerySet):
 class BaseStatusModel(BaseModel):
     """Base class for models with a status and result field."""
 
-    CHECK_STATUS_CHOICES = (
-        ("in_progress", "In progress"),
-        ("awaiting_applicant", "Awaiting applicant"),
-        ("complete", "Complete"),
-        ("withdrawn", "Withdrawn"),
-        ("paused", "Paused"),
-        ("reopened", "Reopened"),
-    )
-    REPORT_STATUS_CHOICES = (
-        ("awaiting_data", "Awaiting data"),
-        ("awaiting_approval", "Awaiting approval"),
-        ("complete", "Complete"),
-        ("withdrawn", "Withdrawn"),
-        ("paused", "Paused"),
-        ("cancelled", "Cancelled"),
-    )
-    STATUS_CHOICES = (
-        ("Check", CHECK_STATUS_CHOICES),
-        ("Report", REPORT_STATUS_CHOICES),
-    )
-    CHECK_RESULT_CHOICES = (("clear", "Clear"), ("consider", "Consider"))
-    REPORT_RESULT_CHOICES = (
-        ("clear", "Clear"),
-        ("consider", "Consider"),
-        ("unidentified", "Unidentified"),
-    )
-    RESULT_CHOICES = (
-        ("Check", CHECK_RESULT_CHOICES),
-        ("Report", REPORT_RESULT_CHOICES),
-    )
+    class Status(models.TextChoices):
+        """Combined list of status values for check / report."""
+
+        AWAITING_APPLICANT = ("awaiting_applicant", "Awaiting applicant")
+        AWAITING_APPROVAL = ("awaiting_approval", "Awaiting approval")
+        AWAITING_DATA = ("awaiting_data", "Awaiting data")
+        CANCELLED = ("cancelled", "Cancelled")
+        COMPLETE = ("complete", "Complete")
+        IN_PROGRESS = ("in_progress", "In progress")
+        PAUSED = ("paused", "Paused")
+        REOPENED = ("reopened", "Reopened")
+        WITHDRAWN = ("withdrawn", "Withdrawn")
+
+    class Result(models.TextChoices):
+        """Combined list of result values for check / report."""
+
+        CLEAR = ("clear", "Clear")
+        CONSIDER = ("consider", "Consider")
+        UNIDENTIFIED = ("unidentified", "Unidentified")
 
     status = models.CharField(
         max_length=20,
         help_text=_("The current state of the check / report (from API)."),
-        choices=STATUS_CHOICES,
+        choices=Status.choices,
         db_index=True,
         blank=True,
         null=True,
     )
     result = models.CharField(
         max_length=20,
-        choices=RESULT_CHOICES,
+        choices=Result.choices,
         help_text=_("The final result of the check / reports (from API)."),
         blank=True,
         null=True,
@@ -260,17 +249,16 @@ class BaseStatusModel(BaseModel):
             status_before=old_status,
             status_after=event.status,
         )
-        if event.status == "complete":
+        if event.status == self.Status.COMPLETE:
             on_completion.send(self.__class__, instance=self)
         return self
 
     def parse(self, raw_json: dict) -> Event:
         """Parse the raw value out into other properties."""
-        print("Parsing:", raw_json)
         super().parse(raw_json)
         self.result = self.raw["result"]
         self.status = self.raw["status"]
-        if self.result == "clear":
+        if self.result == self.Result.CLEAR:
             self.is_clear = True
         return self
 

@@ -30,12 +30,12 @@ class Report(BaseStatusModel):
     # v2 API report types - retained for backwards compatibility,
     # but superseded by ReportType
     REPORT_TYPE_CHOICES_DEPRECATED = [
-        ("identity", "Identity report (deprecated)"),
+        ("identity", "x Identity report (deprecated)"),
         # ("document", "Document report"),
-        ("street_level", "Street level report (deprecated)"),
-        ("facial_similarity", "Facial similarity report (deprecated)"),
-        ("credit", "Credit report (deprecated)"),
-        ("criminal_history", "Criminal history (deprecated)"),
+        ("street_level", "x Street level report (deprecated)"),
+        ("facial_similarity", "x Facial similarity report (deprecated)"),
+        ("credit", "x Credit report (deprecated)"),
+        ("criminal_history", "x Criminal history (deprecated)"),
         # ("right_to_work", "Right to work"),
         ("ssn_trace", "SSN trace (deprecated)"),
     ]
@@ -91,7 +91,7 @@ class Report(BaseStatusModel):
     )
     report_type = models.CharField(
         max_length=50,
-        choices=REPORT_TYPE_CHOICES_DEPRECATED + ReportType.choices,
+        choices=ReportType.choices + REPORT_TYPE_CHOICES_DEPRECATED,
         help_text=_(
             "The name of the report - see https://documentation.onfido.com/#reports"
         ),

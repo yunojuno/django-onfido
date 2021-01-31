@@ -230,7 +230,7 @@ class BaseStatusModelTests(TestCase):
 
         # if we send 'complete' as the status we should fire the second signal
         event, obj = reset()
-        event.status = "complete"
+        event.status = BaseStatusModel.Status.COMPLETE
         obj = obj.update_status(event)
         self.assertEqual(obj.status, event.status)
         self.assertEqual(obj.updated_at, now)
