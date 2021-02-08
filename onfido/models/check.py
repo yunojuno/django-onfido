@@ -40,6 +40,12 @@ class Check(BaseStatusModel):
         help_text=_("The applicant for whom the check is being made."),
         related_name="checks",
     )
+    x_check_type = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        help_text=_("DEPRECATED: Check objects no longer support a type."),
+    )
 
     objects = CheckQuerySet.as_manager()
 

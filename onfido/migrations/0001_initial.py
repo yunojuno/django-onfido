@@ -161,18 +161,17 @@ class Migration(migrations.Migration):
                         blank=True,
                     ),
                 ),
-                # COMMENTED OUT DELIBERATELY SO THAT THE COLUMNS REMAINS IN DATABASE
-                # (
-                #     "check_type",
-                #     models.CharField(
-                #         help_text="See https://documentation.onfido.com/#check-types",
-                #         max_length=10,
-                #         choices=[
-                #             ("express", "Express check"),
-                #             ("standard", "Standard check"),
-                #         ],
-                #     ),
-                # ),
+                (
+                    "check_type",
+                    models.CharField(
+                        help_text="See https://documentation.onfido.com/#check-types",
+                        max_length=10,
+                        choices=[
+                            ("express", "Express check"),
+                            ("standard", "Standard check"),
+                        ],
+                    ),
+                ),
                 (
                     "applicant",
                     models.ForeignKey(
