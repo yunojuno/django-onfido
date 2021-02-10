@@ -43,7 +43,7 @@ class TestApplicantModel:
         assert applicant.user == user
         assert applicant.created_at is None
         # test the related_name
-        assert user.onfido_applicant == applicant
+        assert user.onfido_applicants.last() == applicant
 
     def test_parse(self, applicant):
         """Test default scrubbing of data."""

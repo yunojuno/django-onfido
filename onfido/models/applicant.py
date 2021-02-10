@@ -26,11 +26,11 @@ class Applicant(BaseModel):
 
     base_href = "applicants"
 
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         help_text=_("Django user that maps to this applicant."),
-        related_name="onfido_applicant",
+        related_name="onfido_applicants",
     )
 
     objects = ApplicantQuerySet.as_manager()
