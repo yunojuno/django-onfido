@@ -51,7 +51,7 @@ The main use case is as follows:
     >>> from onfido.helpers import create_applicant
     >>> user = get_user_model().objects.last()  # any old one will do
     >>> applicant = create_applicant(user)
-    DEBUG Making POST request to https://api.onfido.com/v2/applicants
+    DEBUG Making POST request to https://api.onfido.com/v3/applicants
     DEBUG <Response [201]>
     DEBUG {u'first_name': u'hugo', u'last_name': u'rb', u'middle_name': None, ...}
     DEBUG Creating new Onfido applicant from JSON: {u'first_name': u'hugo', u'last_name': u'rb', ...}

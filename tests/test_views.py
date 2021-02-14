@@ -22,8 +22,8 @@ class ViewTests(TestCase):
                 "object": {
                     "id": "5345badd-f4bf-4240-9f3b-ffb998bda09e",
                     "status": "in_progress",
-                    "completed_at": "2016-10-15 11:34:09 UTC",
-                    "href": "https://api.onfido.com/v1/applicants/4d390bbd-63c7-4960-8304-a7a04a8051e8/checks/5345badd-f4bf-4240-9f3b-ffb998bda09e",  # noqa
+                    "completed_at_iso8601": "2019-10-28T15:00:39Z",
+                    "href": "https://api.onfido.com/v3/checks/5345badd-f4bf-4240-9f3b-ffb998bda09e",  # noqa
                 },
             }
         }
@@ -76,7 +76,7 @@ class ViewTests(TestCase):
         data["payload"]["resource_type"] = "check"
         user = get_user_model().objects.create_user("fred")
         applicant = Applicant(user=user, onfido_id="foo").save()
-        check = Check(user=user, applicant=applicant, check_type="standard")
+        check = Check(user=user, applicant=applicant)
         check.onfido_id = data["payload"]["object"]["id"]
         check.save()
 

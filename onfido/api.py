@@ -13,9 +13,12 @@ from urllib import parse as urlparse
 import requests
 from django.http import HttpResponse
 
-from .settings import API_KEY, API_ROOT
+from .settings import API_KEY
 
 logger = logging.getLogger(__name__)
+
+# the API HTTP root url
+API_ROOT = "https://api.onfido.com/v3/"
 
 
 class ApiError(Exception):
@@ -25,7 +28,7 @@ class ApiError(Exception):
         """Initialise error from response object."""
         data = response.json()
         logger.debug("Onfido API error: {}".format(data))
-        super(ApiError, self).__init__(data["error"]["message"])
+        super().__init__(data["error"]["message"])
         self.error_type = data["error"]["type"]
 
 
