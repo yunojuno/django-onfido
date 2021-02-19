@@ -25,7 +25,7 @@ def _hmac(token: bytes, text: bytes) -> str:
     Return the SHA1 HMAC as a string.
 
     """
-    auth_code = hmac.new(token, text, hashlib.sha1).hexdigest()
+    auth_code = hmac.new(token, text, hashlib.sha256).hexdigest()
     logger.debug("Onfido callback request HMAC: %s", auth_code)
     return auth_code
 
@@ -43,7 +43,7 @@ def _match(token: bytes, request: HttpRequest) -> bool:
 
     """
     try:
-        signature = request.META["HTTP_X_SIGNATURE"]
+        signature = request.headers["X-SHA2-Signature"]
         logger.debug("Onfido callback X-Signature: %s", signature)
         logger.debug("Onfido callback request body: %s", request.body)
         return _hmac(token, request.body) == signature

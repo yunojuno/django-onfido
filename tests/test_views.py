@@ -9,7 +9,6 @@ from onfido.views import status_update
 
 
 class ViewTests(TestCase):
-
     """onfido.views module tests."""
 
     @mock.patch("onfido.decorators.WEBHOOK_TOKEN")
@@ -32,7 +31,10 @@ class ViewTests(TestCase):
         @mock.patch("onfido.decorators._match", lambda x, y: True)
         def assert_update(data, message):
             request = factory.post(
-                "/", data=json.dumps(data), content_type="application/json"
+                "/",
+                data=json.dumps(data),
+                content_type="application/json",
+                HTTP_X_SHA2_SIGNATURE="bac836ffcc32856bcf70deb77dd63e432ab13e4d940751db927795f616c85352",  # noqa: E501
             )
             response = status_update(request)
             self.assertEqual(response.status_code, 200)
