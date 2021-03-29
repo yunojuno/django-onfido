@@ -1,13 +1,11 @@
-.. image:: https://travis-ci.org/yunojuno/django-onfido.svg?branch=master
-    :target: https://travis-ci.org/yunojuno/django-onfido
-
-.. image:: https://badge.fury.io/py/django-onfido.svg
-    :target: https://badge.fury.io/py/django-onfido
-
 Django Onfido
 ==============
 
-Django app for integration with the Onfido API (v2)
+Django app for integration with the Onfido API (v3)
+
+The current version supports Django 2.2+ and Python 3.7+.
+
+*For v2 API please check version prior to 1.0*
 
 Background
 ----------
@@ -141,34 +139,17 @@ The following settings can be specified in the Django settings:
 Tests
 -----
 
-The project has pretty good test coverage (>90%) and the tests themselves run through ``tox``.
+If you want to run the tests manually, install ``poetry``.
 
 .. code::
 
-    $ pip install tox
-    $ tox
-
-If you want to run the tests manually, make sure you install the requirements, and Django.
-
-.. code::
-
-    $ pip install -r requirements.txt
-    $ pip install django==1.8  # your version goes here
-    $ python manage.py test onfido.tests
+    $ poetry install
+    $ poetry run pytest
 
 If you are hacking on the project, please keep coverage up.
 
 Contributing
 ------------
 
-Standard GH rules apply: clone the repo to your own account, create a branch,
-make sure you update the tests, and submit a pull request.
-
-Status
-------
-
-This project is very early in its development. We are using it at YunoJuno,
-but 'caveat emptor'. It currently only supports 'standard' checks, and has
-very patchy support for the full API. It does what we need it to do right now,
-and we will extend it as we evolve. If you need or want additional features,
-get involved :-).
+Standard GH rules apply: clone the repo to your own account, make sure you
+update the tests, and submit a pull request.
