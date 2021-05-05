@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-onfido"
-version = "1.0"
+version = "1.1"
 description = "Django app for integration with Onfido."
 license = "MIT"
 authors = ["YunoJuno <code@yunojuno.com>"]
