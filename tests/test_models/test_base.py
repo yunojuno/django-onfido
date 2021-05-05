@@ -298,7 +298,7 @@ class BaseStatusModelTests(TestCase):
         }
         user = get_user_model()()
         obj = Check().parse(data)
-        self.assertIsNone(obj.is_clear)
+        self.assertFalse(obj.is_clear)
         obj = obj.mark_as_clear(user)
         mock_save.assert_called_once_with()
         mock_event_save.assert_called_once_with()
