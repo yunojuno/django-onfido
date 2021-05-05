@@ -2,6 +2,7 @@ from distutils.version import StrictVersion
 from os import getenv, path
 
 import django
+from django.core.exceptions import ImproperlyConfigured
 
 DJANGO_VERSION = StrictVersion(django.get_version())
 
@@ -10,23 +11,8 @@ TEMPLATE_DEBUG = True
 USE_TZ = True
 USE_L10N = True
 
-try:
-    from django.db.models import JSONField  # noqa: F401
 
-    DATABASES = {
-        "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": "test.db",}
-    }
-except ImportError:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": getenv("TEST_DB_NAME", "onfido"),
-            "USER": getenv("TEST_DB_USER", "postgres"),
-            "PASSWORD": getenv("TEST_DB_PASSWORD", "postgres"),
-            "HOST": getenv("TEST_DB_HOST", "localhost"),
-            "PORT": getenv("TEST_DB_PORT", "5432"),
-        }
-    }
+DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": "onfido.db"}}
 
 INSTALLED_APPS = (
     "django.contrib.admin",
@@ -69,7 +55,12 @@ AUTH_USER_MODEL = "test_app.User"
 
 STATIC_URL = "/static/"
 
-SECRET_KEY = "secret"
+SECRET_KEY = "onfido"  # noqa: S105
+
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    ".ngrok.io",
+]
 
 LOGGING = {
     "version": 1,
@@ -89,10 +80,18 @@ LOGGING = {
         #     'propagate': True,
         #     'level': 'WARNING',
         # },
-        "onfido": {"handlers": ["console"], "level": "DEBUG", "propagate": False,},
+        "onfido": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
     },
 }
 
 ROOT_URLCONF = "tests.urls"
 
-assert DEBUG, "This settings file can only be used with DEBUG=True"
+if not DEBUG:
+    raise ImproperlyConfigured("This settings file can only be used with DEBUG=True")
+
+# False by default, but if True this will run the integration tests in test_integration
+TEST_INTEGRATION = bool(getenv("ONFIDO_TEST_INTEGRATION", False))

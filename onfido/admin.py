@@ -1,13 +1,18 @@
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Union
 
 import simplejson as json  # simplejson supports Decimal
 from django.contrib import admin
 from django.db import models
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
-from .models import Applicant, BaseModel, Check, Event, Report
+from .models import Applicant, Check, Event, Report
+
+if TYPE_CHECKING:
+    from .models.base import BaseModel
 
 
 class ResultMixin(object):
@@ -92,7 +97,6 @@ class CheckAdmin(ResultMixin, EventsMixin, RawMixin, UserMixin, admin.ModelAdmin
     list_display = (
         "onfido_id",
         "_user",
-        "check_type",
         "status",
         "result",
         "created_at",
@@ -104,7 +108,6 @@ class CheckAdmin(ResultMixin, EventsMixin, RawMixin, UserMixin, admin.ModelAdmin
         "user",
         "created_at",
         "applicant",
-        "check_type",
         "status",
         "result",
         "updated_at",
@@ -112,7 +115,7 @@ class CheckAdmin(ResultMixin, EventsMixin, RawMixin, UserMixin, admin.ModelAdmin
         "_events",
     )
     search_fields = ("onfido_id", "user__first_name", "user__last_name")
-    list_filter = ("created_at", "updated_at", "check_type", "status", "result")
+    list_filter = ("created_at", "updated_at", "status", "result")
     ordering = ("user__first_name", "user__last_name")
     raw_id_fields = ("applicant", "user")
     exclude = ("raw",)

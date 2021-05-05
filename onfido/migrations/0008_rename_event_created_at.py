@@ -21,6 +21,8 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.RenameField(
-            model_name="event", old_name="created_at", new_name="completed_at",
+            model_name="event",
+            old_name="created_at",
+            new_name="completed_at",
         ),
     ]

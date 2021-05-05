@@ -12,7 +12,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterModelOptions(
-            name="event", options={"ordering": ["completed_at"]},
+            name="event",
+            options={"ordering": ["completed_at"]},
         ),
         migrations.AddField(
             model_name="check",

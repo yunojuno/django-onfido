@@ -7,15 +7,16 @@ from django.test import RequestFactory, TestCase
 from onfido.decorators import _hmac, _match, verify_signature
 
 # taken from a real requestbin webhook callback
-TEST_WEBHOOK_TOKEN = b"bLFiN4S09FV1nH5G7ZJc3nCYqeMZrHcU"
-TEST_REQUEST_SIGNATURE = "32f77520f7b025f15ef3ab55be178667c92827e3"
+TEST_WEBHOOK_TOKEN = b"ileDMrEn29YPQqZBZi8HJ-e33nqXMrtx"
+TEST_REQUEST_SIGNATURE = (
+    "bac836ffcc32856bcf70deb77dd63e432ab13e4d940751db927795f616c85352"
+)
 # HttpRequest.body is a bytestring
 TEST_REQUEST_BODY = (
-    b'{"payload":{"resource_type":"check","action":"check.form_opened",'
-    b'"object":{"id":"923d2717-9abd-4c0b-bc4f-33d769547df5",'
-    b'"status":"awaiting_applicant","completed_at":"2016-10-26 16:18:24 UTC",'
-    b'"href":"https://api.onfido.com/v1/applicants/4d2ff0dc-3352-4eed-9b7c-'
-    b'86ac7b619e4e/checks/923d2717-9abd-4c0b-bc4f-33d769547df5"}}}'
+    b'{"payload":{"resource_type":"check","action":"check.started",'
+    b'"object":{"id":"08f64599-e484-4870-8227-b4a52861a656",'
+    b'"status":"in_progress","completed_at_iso8601":"2021-02-19T16:30:03Z",'
+    b'"href":"https://api.onfido.com/v3/checks/08f64599-e484-4870-8227-b4a52861a656"}}}'
 )
 
 
@@ -30,7 +31,10 @@ class DecoratorTests(TestCase):
         """Create test request."""
         if signature:
             return self.factory.post(
-                "/", body, content_type="application/json", HTTP_X_SIGNATURE=signature
+                "/",
+                body,
+                content_type="application/json",
+                HTTP_X_SHA2_SIGNATURE=signature,
             )
         else:
             return self.factory.post("/", body, content_type="application/json")
