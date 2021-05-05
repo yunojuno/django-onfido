@@ -275,7 +275,9 @@ class BaseStatusModel(BaseModel):
         Returns the object itself, updated and saved.
 
         """
-        self._override_event(user).save()
+    event = self._override_event(user)
+    event["object"]["result"] = self.Result.CLEAR
+    event.save()
         self.result = self.Result.CLEAR
         self.save()
         return self
