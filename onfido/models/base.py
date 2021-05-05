@@ -153,14 +153,6 @@ class BaseStatusModel(BaseModel):
         null=True,
         help_text=_("The timestamp of the most recent status change (from API)."),
     )
-    is_clear = models.BooleanField(
-        default=None,
-        null=True,
-        blank=True,
-        help_text=_(
-            "True if the check / report is 'clear' (via API or manual override)."
-        ),
-    )
 
     class Meta:
         abstract = True
@@ -258,8 +250,6 @@ class BaseStatusModel(BaseModel):
         super().parse(raw_json)
         self.result = self.raw["result"]
         self.status = self.raw["status"]
-        if self.result == self.Result.CLEAR:
-            self.is_clear = True
         return self
 
     def mark_as_clear(self, user: settings.AUTH_USER_MODEL) -> Event:
@@ -286,6 +276,11 @@ class BaseStatusModel(BaseModel):
 
         """
         self._override_event(user).save()
-        self.is_clear = True
+        self.result = self.Result.CLEAR
         self.save()
         return self
+
+    @property
+    def is_clear(self) -> bool:
+        """Return True/False to whether a check is successful and clear."""
+        return self.result == self.Result.CLEAR
