@@ -276,7 +276,7 @@ class BaseStatusModel(BaseModel):
 
         """
         event = self._override_event(user)
-        event["object"]["result"] = self.Result.CLEAR
+        event.raw["payload"]["result"] = self.Result.CLEAR
         event.save()
 
         self.result = self.Result.CLEAR
