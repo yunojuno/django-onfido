@@ -1,8 +1,15 @@
 [flake8]
 max-line-length = 88
 max-complexity = 8
-exclude = .venv,.tox,tests,migrations
+exclude = .venv,.tox,.git
 # http://flake8.pycqa.org/en/2.5.5/warnings.html#warning-error-codes
+
+per-file-ignores =
+  ; use of asserts is allowed in tests
+  tests/*:S101
+  ; migrations may have long lines
+  */migrations/*:E501
+
 ignore =
   # pydocstyle - docstring conventions (PEP257)
   D1    # [pydocstyle] missing docstring

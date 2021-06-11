@@ -5,7 +5,7 @@ from dateutil.parser import parse as date_parse
 
 from onfido.models import Check
 
-from ..conftest import APPLICANT_ID, CHECK_ID, TEST_CHECK
+from ..conftest import APPLICANT_ID, TEST_CHECK
 
 
 @pytest.mark.django_db

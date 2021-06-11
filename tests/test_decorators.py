@@ -21,7 +21,6 @@ TEST_REQUEST_BODY = (
 
 
 class DecoratorTests(TestCase):
-
     """onfido.decorator module tests."""
 
     def setUp(self):

@@ -6,7 +6,6 @@ from onfido import api, settings
 
 
 class SettingsTests(TestCase):
-
     """onfido.settings module tests."""
 
     def test_defaults(self):

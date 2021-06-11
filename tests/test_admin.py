@@ -26,7 +26,6 @@ class TestResultMixin:
 
 @pytest.mark.django_db
 class TestEventsMixin:
-
     """onfido.admin.EventsMixin tests."""
 
     @mock.patch.object(Check, "events")

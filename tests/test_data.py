@@ -1,14 +1,24 @@
-import json
-
 from onfido.data import check_supported_country, get_countries
 
 
 def test_check_supported_country_matches_json():
     test_params = (
-        ("YEM", False,),
-        ("ZMB", True,),
-        ("IND", True,),
-        ("ERI", False,),
+        (
+            "YEM",
+            False,
+        ),
+        (
+            "ZMB",
+            True,
+        ),
+        (
+            "IND",
+            True,
+        ),
+        (
+            "ERI",
+            False,
+        ),
     )
 
     data = get_countries()

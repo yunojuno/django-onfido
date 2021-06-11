@@ -6,7 +6,6 @@ from dateutil.parser import parse as date_parse
 from django.contrib.auth import get_user_model
 from django.db.models import Model, query
 from django.test import TestCase
-from django.utils.timezone import now as tz_now
 
 from onfido.api import ApiError
 from onfido.models import Applicant, Check, Event

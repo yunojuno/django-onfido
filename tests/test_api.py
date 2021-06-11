@@ -6,7 +6,6 @@ from onfido.api import ApiError, _headers, _respond, _url, get, post
 
 
 class ApiTests(TestCase):
-
     """onfido.api module tests."""
 
     def test__headers(self):

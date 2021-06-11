@@ -3,8 +3,6 @@ from unittest import mock
 
 import pytest
 from dateutil.parser import parse as date_parse
-from django.contrib.auth import get_user_model
-from django.test import TestCase
 
 from onfido.helpers import (  # import from helpers to deter possible dependency issues
     Applicant,
