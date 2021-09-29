@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import simplejson as json  # simplejson supports Decimal
 from django.contrib import admin
@@ -35,7 +35,7 @@ class EventsMixin(object):
         html = "".join(
             ["<li>{}: {}</li>".format(e.completed_at.date(), e.action) for e in events]
         )
-        return mark_safe("<ul>{}</ul>".format(html))
+        return mark_safe("<ul>{}</ul>".format(html))  # noqa: S703, S308
 
     _events.short_description = _("Related events")  # type: ignore
 
@@ -54,7 +54,7 @@ class RawMixin(object):
         """
         pretty = json.dumps(obj.raw, sort_keys=True, indent=4, separators=(",", ": "))
         html = pretty.replace(" ", "&nbsp;").replace("\n", "<br>")
-        return mark_safe("<code>{}</code>".format(html))
+        return mark_safe("<code>{}</code>".format(html))  # noqa: S703, S308
 
     _raw.short_description = _("Raw (from API)")  # type: ignore
 
@@ -62,7 +62,7 @@ class RawMixin(object):
 class UserMixin(object):
     """Admin mixin used to add _user function."""
 
-    def _user(self, obj: Union[Applicant, Check, Report]) -> str:
+    def _user(self, obj: Applicant | Check | Report) -> str:
         """
         Return user's real name.
 

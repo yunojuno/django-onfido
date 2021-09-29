@@ -52,7 +52,7 @@ def _match(token: bytes, request: HttpRequest) -> bool:
             "Onfido callback missing X-Signature - this may be an unauthorised request."
         )
         return False
-    except Exception:
+    except Exception:  # noqa: B902
         logger.exception("Error attempting to decode Onfido signature.")
         return False
 

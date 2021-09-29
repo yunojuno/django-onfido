@@ -1,10 +1,6 @@
-from distutils.version import StrictVersion
 from os import getenv, path
 
-import django
 from django.core.exceptions import ImproperlyConfigured
-
-DJANGO_VERSION = StrictVersion(django.get_version())
 
 DEBUG = True
 TEMPLATE_DEBUG = True

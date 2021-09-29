@@ -98,7 +98,7 @@ class BaseQuerySet(models.QuerySet):
         for obj in self:
             try:
                 obj.fetch()
-            except Exception:
+            except Exception:  # noqa: B902
                 logger.exception("Failed to fetch Onfido object: %r", obj)
 
     def pull(self) -> None:
@@ -106,7 +106,7 @@ class BaseQuerySet(models.QuerySet):
         for obj in self:
             try:
                 obj.pull()
-            except Exception:
+            except Exception:  # noqa: B902
                 logger.exception("Failed to pull Onfido object: %r", obj)
 
 
@@ -229,7 +229,7 @@ class BaseStatusModel(BaseModel):
         self.updated_at = event.completed_at
         try:
             self.pull()
-        except Exception:
+        except Exception:  # noqa: B902
             # even if we can't get latest, we should save the changes we
             # have already made to the object
             logger.warning("Unable to pull latest from Onfido: '%r'", self)

@@ -63,6 +63,6 @@ def status_update(request: HttpRequest) -> HttpResponse:
     except Report.DoesNotExist:
         logger.warning("Onfido report does not exist: %s", event.onfido_id)
         return HttpResponse("Report not found.")
-    except Exception:
+    except Exception:  # noqa: B902
         logger.exception("Onfido update could not be processed.")
         return HttpResponse("Unknown error.")

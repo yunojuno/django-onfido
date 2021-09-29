@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-onfido"
-version = "1.1.1"
+version = "1.1.2"
 description = "Django app for integration with Onfido."
 license = "MIT"
 authors = ["YunoJuno <code@yunojuno.com>"]
@@ -30,27 +30,29 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-django = "^2.2 || ^3.0"
+django = "^2.2 || ^3.0 || ^ 4.0"
 python-dateutil = "*"
 requests =  "*"
 simplejson = "*"
 
 [tool.poetry.dev-dependencies]
-pytest = "*"
-pytest-cov = "*"
-pytest-django = "*"
+black = {version = "*", allow-prereleases = true}
 coverage = "*"
-pylint = "*"
 flake8 = "*"
 flake8-bandit = "*"
+flake8-blind-except = "*"
 flake8-docstrings = "*"
+flake8-logging-format = "*"
+flake8-print = "*"
+freezegun = "*"
 isort = "*"
 mypy = "*"
 pre-commit = "*"
-black = {version = "*", allow-prereleases = true}
-freezegun = "*"
+pylint = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-django = "*"
 tox = "*"
-flake8-print = "*"
 types-requests = "*"
 types-python-dateutil = "*"
 types-simplejson = "*"

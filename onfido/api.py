@@ -7,7 +7,6 @@ This is a simple wrapper around requests.
 from __future__ import annotations
 
 import logging
-from typing import Dict
 from urllib import parse as urlparse
 
 import requests
@@ -37,10 +36,10 @@ def _url(path: str) -> str:
     return urlparse.urljoin(API_ROOT, path)
 
 
-def _headers(api_key: str = API_KEY) -> Dict[str, str]:
+def _headers(api_key: str = API_KEY) -> dict[str, str]:
     """Format request headers."""
     return {
-        "Authorization": "Token token={0}".format(api_key),
+        "Authorization": "Token token={}".format(api_key),
         "Content-Type": "application/json",
     }
 
