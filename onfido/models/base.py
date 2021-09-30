@@ -11,7 +11,6 @@ from django.utils.timezone import now as tz_now
 from django.utils.translation import gettext_lazy as _
 
 from ..api import get
-from ..compat import JSONField
 from ..signals import on_completion, on_status_change
 from .event import Event
 
@@ -35,7 +34,7 @@ class BaseModel(models.Model):
         blank=True,
         null=True,
     )
-    raw = JSONField(
+    raw = models.JSONField(
         help_text=_("The raw JSON returned from the API."), blank=True, null=True
     )
 

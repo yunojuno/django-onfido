@@ -7,8 +7,6 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from ..compat import JSONField
-
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +35,7 @@ class Event(models.Model):
     received_at = models.DateTimeField(
         help_text=_("The timestamp when the server received the event."),
     )
-    raw = JSONField(
+    raw = models.JSONField(
         help_text=_("The raw JSON returned from the API."), blank=True, null=True
     )
 
