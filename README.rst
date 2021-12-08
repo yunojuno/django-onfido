@@ -3,7 +3,7 @@ Django Onfido
 
 Django app for integration with the Onfido API (v3)
 
-The current version supports Django 3.0+ and Python 3.7+.
+The current version supports Django 3.1+/4.0+ and Python 3.7+.
 
 *For v2 API please check version prior to 1.0*
 
