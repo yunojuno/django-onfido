@@ -10,7 +10,7 @@ from django.db import models
 from django.utils.timezone import now as tz_now
 from django.utils.translation import gettext_lazy as _
 
-from ..api import get
+from ..api import ApiError, get
 from ..signals import on_completion, on_status_change
 from .event import Event
 
@@ -74,7 +74,12 @@ class BaseModel(models.Model):
         Returns the updated object (unsaved).
 
         """
-        return self.parse(get(self.href))
+        try:
+            return self.parse(get(self.href))
+        except ApiError as e:
+            if e.status_code == 410 and settings.SYNC_DELETION is True:
+                return self.mark_as_expired()
+            raise e
 
     def pull(self) -> BaseModel:
         """
@@ -120,6 +125,7 @@ class BaseStatusModel(BaseModel):
         AWAITING_DATA = ("awaiting_data", "Awaiting data")
         CANCELLED = ("cancelled", "Cancelled")
         COMPLETE = ("complete", "Complete")
+        EXPIRED = ("expired", "Expired")
         IN_PROGRESS = ("in_progress", "In progress")
         PAUSED = ("paused", "Paused")
         REOPENED = ("reopened", "Reopened")
@@ -282,7 +288,25 @@ class BaseStatusModel(BaseModel):
         self.save()
         return self
 
+    def mark_as_expired(self) -> Event:
+        """
+        Expire a check, as a result of Onfido's action.
+
+        When rolling deletion is enabled, the data is scrubbed from Onfido.
+        Our model should also respect, and reflect this deletion.
+        The status is changed to EXPIRED, as it's no longer valid,
+        and we scrub the raw event.
+        """
+        self.status = self.Status.EXPIRED
+        self.raw = None
+        return self
+
     @property
     def is_clear(self) -> bool:
         """Return True/False to whether a check is successful and clear."""
         return self.result == self.Result.CLEAR
+
+    @property
+    def is_expired(self) -> bool:
+        """Return True/False to whether a check has expired."""
+        return self.status == self.Status.EXPIRED

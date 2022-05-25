@@ -28,6 +28,7 @@ class ApiError(Exception):
         data = response.json()
         logger.debug("Onfido API error: {}".format(data))
         super().__init__(data["error"]["message"])
+        self.status_code = response.status_code
         self.error_type = data["error"]["type"]
 
 
