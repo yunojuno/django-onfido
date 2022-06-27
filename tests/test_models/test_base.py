@@ -6,6 +6,7 @@ from dateutil.parser import parse as date_parse
 from django.contrib.auth import get_user_model
 from django.db.models import Model, query
 from django.test import TestCase
+from django.test.utils import override_settings
 
 from onfido.api import ApiError
 from onfido.models import Applicant, Check, Event
@@ -89,6 +90,7 @@ class BaseModelTests(TestCase):
         response = mock.Mock()
         response.json.return_value = {
             "error": {
+                "status_code": 500,
                 "fields": {},
                 "message": "Authorization error: please re-check your credentials",
                 "type": "authorization_error",
@@ -311,3 +313,71 @@ class BaseStatusModelTests(TestCase):
         mock_filter.assert_called_once_with(
             onfido_id="foo", resource_type="basestatusmodelinstance"
         )
+
+    @override_settings(SYNC_DELETION=False)
+    @mock.patch("onfido.signals.on_status_change.send")
+    @mock.patch("onfido.signals.on_completion.send")
+    @mock.patch("onfido.models.base.get")
+    @mock.patch.object(BaseStatusModel, "save")
+    def test_fetch_onfido_gone__sync_false(
+        self, mock_save, mock_get, mock_complete, mock_update
+    ):
+        """Test the update_status method."""
+        now = datetime.datetime.now()
+
+        event = Event(
+            action="complete",
+            status=BaseStatusModel.Status.COMPLETE,
+            onfido_id="foo",
+            resource_type="check",
+            completed_at=now,
+        )
+        obj = BaseStatusModelInstance(status=BaseStatusModel.Status.COMPLETE)
+
+        response = mock.Mock()
+        response.status_code = 410
+        response.json.return_value = {
+            "error": {
+                "message": "Check has been deleted",
+                "type": "gone",
+            }
+        }
+
+        mock_get.side_effect = ApiError(response)
+        obj = obj.update_status(event)
+        self.assertEqual(obj.updated_at, now)
+        assert obj.status == BaseStatusModel.Status.COMPLETE
+
+    @override_settings(SYNC_DELETION=True)
+    @mock.patch("onfido.signals.on_status_change.send")
+    @mock.patch("onfido.signals.on_completion.send")
+    @mock.patch("onfido.models.base.get")
+    @mock.patch.object(BaseStatusModel, "save")
+    def test_fetch_onfido_gone__sync_true(
+        self, mock_save, mock_get, mock_complete, mock_update
+    ):
+        """Test the update_status method."""
+        now = datetime.datetime.now()
+
+        event = Event(
+            action="form.opened",
+            status=BaseStatusModel.Status.COMPLETE,
+            onfido_id="foo",
+            resource_type="check",
+            completed_at=now,
+        )
+        obj = BaseStatusModelInstance(status=BaseStatusModel.Status.COMPLETE)
+
+        response = mock.Mock()
+        response.status_code = 410
+        response.json.return_value = {
+            "error": {
+                "message": "Check has been deleted",
+                "type": "gone",
+            }
+        }
+
+        mock_get.side_effect = ApiError(response)
+        obj = obj.update_status(event)
+        self.assertEqual(obj.updated_at, now)
+        assert obj.status == BaseStatusModel.Status.EXPIRED

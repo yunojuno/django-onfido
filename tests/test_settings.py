@@ -13,6 +13,7 @@ class SettingsTests(TestCase):
         self.assertEqual(api.API_ROOT, "https://api.onfido.com/v3/")
         self.assertEqual(settings.LOG_EVENTS, True)
         self.assertEqual(settings.TEST_MODE, False)
+        self.assertEqual(settings.SYNC_DELETION, False)
         # These may have been set locally
         # self.assertEqual(settings.API_KEY, None)
         # self.assertEqual(settings.WEBHOOK_TOKEN, None)
