@@ -30,7 +30,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-django = "^3.2 || ^ 4.0"
+django = "^3.2 || ^4.0"
 python-dateutil = "*"
 requests =  "*"
 simplejson = "*"
